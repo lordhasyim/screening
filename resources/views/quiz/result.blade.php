@@ -19,6 +19,7 @@
                 <small class="text-muted">
                     Diselesaikan pada {{ $quizResponse->completed_at->format('d F Y, H:i') }} WIB
                 </small>
+                <a href="/">Kembali Ke halaman utama</a>
             </div>
 
             <!-- Personal Summary Card -->

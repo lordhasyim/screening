@@ -96,7 +96,7 @@ class AuthController extends Controller
     private function logFailedLogin($email, $nip, $ip)
     {
         DB::table('admin_logs')->insert([
-            'admin_user_id' => null,
+            'admin_user_id' => 1,
             'action' => 'failed_login',
             'description' => "Login gagal untuk email: {$email}, NIP: {$nip}",
             'metadata' => json_encode([
