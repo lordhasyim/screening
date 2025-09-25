@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Faculty;
 use App\Models\Department;
+use App\Models\Faculty;
+use Illuminate\Database\Seeder;
 
-class FacultySeeder extends Seeder
+class FacultyAndDepartmentSeeder extends Seeder
 {
     public function run()
     {
@@ -22,7 +22,7 @@ class FacultySeeder extends Seeder
                     ['name' => 'Psikologi', 'code' => 'PSI'],
                     ['name' => 'Pendidikan Guru Pendidikan Anak Usia Dini', 'code' => 'PG-PAUD'],
                     ['name' => 'Pendidikan Guru Sekolah Dasar', 'code' => 'PGSD'],
-                ]
+                ],
             ],
             [
                 'name' => 'Fakultas Sastra',
@@ -38,7 +38,7 @@ class FacultySeeder extends Seeder
                     ['name' => 'Pendidikan Bahasa Arab', 'code' => 'PBA'],
                     ['name' => 'Pendidikan Seni Rupa', 'code' => 'PSR'],
                     ['name' => 'Seni dan Desain', 'code' => 'SD'],
-                ]
+                ],
             ],
             [
                 'name' => 'Fakultas Matematika dan Ilmu Pengetahuan Alam',
@@ -52,7 +52,7 @@ class FacultySeeder extends Seeder
                     ['name' => 'Pendidikan Fisika', 'code' => 'P-FIS'],
                     ['name' => 'Pendidikan Kimia', 'code' => 'P-KIM'],
                     ['name' => 'Pendidikan Biologi', 'code' => 'P-BIO'],
-                ]
+                ],
             ],
             [
                 'name' => 'Fakultas Ekonomi dan Bisnis',
@@ -65,7 +65,7 @@ class FacultySeeder extends Seeder
                     ['name' => 'Pendidikan Administrasi Perkantoran', 'code' => 'PAP'],
                     ['name' => 'Pendidikan Tata Niaga', 'code' => 'PTN'],
                     ['name' => 'Pendidikan Akuntansi', 'code' => 'P-AKT'],
-                ]
+                ],
             ],
             [
                 'name' => 'Fakultas Ilmu Sosial',
@@ -77,7 +77,7 @@ class FacultySeeder extends Seeder
                     ['name' => 'Pendidikan Geografi', 'code' => 'P-GEO'],
                     ['name' => 'Pendidikan Sosiologi', 'code' => 'P-SOS'],
                     ['name' => 'Ilmu Perpustakaan', 'code' => 'IP'],
-                ]
+                ],
             ],
             [
                 'name' => 'Fakultas Teknik',
@@ -92,7 +92,7 @@ class FacultySeeder extends Seeder
                     ['name' => 'Pendidikan Teknik Elektro', 'code' => 'PTE'],
                     ['name' => 'Pendidikan Teknik Informatika', 'code' => 'PTI'],
                     ['name' => 'Pendidikan Teknik Otomotif', 'code' => 'PTO'],
-                ]
+                ],
             ],
             [
                 'name' => 'Fakultas Ilmu Keolahragaan',
@@ -102,7 +102,7 @@ class FacultySeeder extends Seeder
                     ['name' => 'Pendidikan Kepelatihan Olahraga', 'code' => 'PKO'],
                     ['name' => 'Ilmu Keolahragaan', 'code' => 'IKOR'],
                     ['name' => 'Ilmu Kesehatan Masyarakat', 'code' => 'IKM'],
-                ]
+                ],
             ],
         ];
 

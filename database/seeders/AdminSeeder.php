@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\AdminUser;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\AdminUser;
 
-class AdminUserSeeder extends Seeder
+class AdminSeeder extends Seeder
 {
     public function run()
     {
@@ -14,6 +14,7 @@ class AdminUserSeeder extends Seeder
         $adminUsers = [
             [
                 'name' => 'Super Admin',
+                'nip' => '12345678',
                 'email' => 'superadmin@team.um.ac.id',
                 'password' => Hash::make('admin123'),
                 'role' => 'super_admin',
@@ -21,6 +22,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'Admin team',
+                'nip' => '12345679',
                 'email' => 'admin@team.um.ac.id',
                 'password' => Hash::make('team2024'),
                 'role' => 'admin',
@@ -28,6 +30,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'Tim Skrining 1',
+                'nip' => '12345671',
                 'email' => 'skrining1@team.um.ac.id',
                 'password' => Hash::make('skrining123'),
                 'role' => 'viewer',
@@ -35,6 +38,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'Tim Skrining 2',
+                'nip' => '123456711',
                 'email' => 'skrining2@team.um.ac.id',
                 'password' => Hash::make('skrining123'),
                 'role' => 'viewer',

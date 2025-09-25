@@ -6,6 +6,8 @@
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-lg-10">
+
+        
             
             <!-- Completion Header -->
             <div class="text-center mb-5 fade-in">
@@ -20,7 +22,7 @@
             </div>
 
             <!-- Personal Summary Card -->
-            <div class="card card-pastel mb-4 slide-up">
+            {{-- <div class="card card-pastel mb-4 slide-up">
                 <div class="card-body">
                     <h5 class="text-primary mb-3">
                         <i class="bi bi-person-badge me-2"></i>
@@ -339,7 +341,7 @@
                         Skrining Lagi
                     </a>
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Privacy Note -->
             <div class="text-center">

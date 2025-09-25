@@ -26,23 +26,21 @@
                 </div>
             </div>
 
-            <!-- Information Card (Show only on first load) -->
+            <!-- Information Card (Show only on first question) -->
             <div id="infoCard" class="card card-gradient text-white mb-4 slide-up">
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-1">
-                            <div style="font-size: 2.5rem;">
-                                <i class="bi bi-clipboard2-pulse"></i>
-                            </div>
+                    <div class="d-flex align-items-center">
+                        <div class="me-3" style="font-size: 2.5rem;">
+                            <i class="bi bi-clipboard2-pulse"></i>
                         </div>
-                        <div class="col-md-8">
+                        <div>
                             <h5 class="mb-2">Tahap Lanjutan Diperlukan</h5>
                             <p class="mb-0 opacity-90">
                                 Berdasarkan hasil tahap sebelumnya, kami perlu melakukan penilaian yang lebih mendalam. 
                                 Klik "Mulai" untuk memulai {{ count($dass21Questions) }} pertanyaan berikutnya.
                             </p>
                         </div>
-                        <div class="col-md-3 text-end">
+                        <div class="ms-auto">
                             <button id="startBtn" class="btn btn-light btn-lg">
                                 <i class="bi bi-play-circle me-2"></i>Mulai
                             </button>
@@ -61,6 +59,9 @@
                         <div class="small text-muted">
                             Pertanyaan <span id="currentQuestionNumber">1</span> dari {{ count($dass21Questions) }}
                         </div>
+                        <div class="small text-muted mt-1">
+                            Estimasi waktu tersisa: <span id="timeEstimate">-</span> menit
+                        </div>
                     </div>
 
                     <!-- Current Question Display -->
@@ -73,23 +74,23 @@
                     <!-- Answer Options -->
                     <div id="answerOptions" class="row g-3 mb-5">
                         <div class="col-md-6">
-                            <div class="answer-option" data-value="Tidak Pernah" role="button" tabindex="0">
-                                😊 Tidak Pernah
+                            <div class="answer-option" data-value="Tidak Pernah" data-color="success" role="button" tabindex="0">
+                                <i class="bi bi-circle me-2"></i>Tidak Pernah
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="answer-option" data-value="Kadang-Kadang" role="button" tabindex="0">
-                                😐 Kadang-Kadang
+                            <div class="answer-option" data-value="Kadang-Kadang" data-color="info" role="button" tabindex="0">
+                                <i class="bi bi-circle-half me-2"></i>Kadang-Kadang
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="answer-option" data-value="Sering" role="button" tabindex="0">
-                                😟 Sering
+                            <div class="answer-option" data-value="Sering" data-color="warning" role="button" tabindex="0">
+                                <i class="bi bi-circle-fill me-2"></i>Sering
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="answer-option" data-value="Sering Sekali" role="button" tabindex="0">
-                                😰 Sering Sekali
+                            <div class="answer-option" data-value="Sering Sekali" data-color="danger" role="button" tabindex="0">
+                                <i class="bi bi-record-circle me-2"></i>Sering Sekali
                             </div>
                         </div>
                     </div>
@@ -122,11 +123,11 @@
                 <!-- Hidden inputs will be populated by JavaScript -->
             </form>
 
-            <!-- Help Card -->
+            <!-- Support Card -->
             <div class="card card-pastel mt-4">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <h6 class="text-primary mb-2">
                                 <i class="bi bi-heart me-2"></i>
                                 Dukungan Tersedia
@@ -135,9 +136,15 @@
                                 Tim konseling profesional kami siap memberikan dukungan kapan pun Anda membutuhkannya.
                             </p>
                         </div>
-                        <div class="col-md-4 text-end">
-                            <div class="fw-bold text-primary">Hotline 24/7</div>
+                        <div class="col-md-3">
+                            <div class="fw-semibold text-primary">Hotline Crisis</div>
+                            <div class="small text-muted">119 ext. 8</div>
+                            <div class="small text-muted">24 jam</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="fw-semibold text-primary">Konseling UM</div>
                             <div class="small text-muted">(0341) 551-312</div>
+                            <div class="small text-muted">konseling@um.ac.id</div>
                         </div>
                     </div>
                 </div>
@@ -153,6 +160,7 @@ $(document).ready(function() {
     const questions = @json($dass21Questions);
     let currentQuestion = 0;
     let answers = {}; // Store answers by question index
+    let startTime = null;
     let quizStarted = false;
     
     // Start button handler
@@ -180,16 +188,18 @@ $(document).ready(function() {
     function startQuiz() {
         $('#infoCard').fadeOut(300);
         $('#quizContainer').fadeIn(300);
+        startTime = Date.now();
         quizStarted = true;
         
-        initializeQuiz();
-        trackUserInteraction('dass21_started');
-    }
-    
-    function initializeQuiz() {
         displayCurrentQuestion();
         updateProgress();
         updateNavigation();
+        updateTimeEstimate();
+        
+        // Start time estimation updates
+        setInterval(updateTimeEstimate, 10000); // Update every 10 seconds
+        
+        trackUserInteraction('dass21_started');
     }
     
     function displayCurrentQuestion() {
@@ -208,6 +218,9 @@ $(document).ready(function() {
         // Add entrance animation
         $('#questionContainer').addClass('fade-in');
         setTimeout(() => $('#questionContainer').removeClass('fade-in'), 600);
+        
+        // Track sensitive questions for additional support
+        trackSensitiveQuestion();
     }
     
     function selectAnswer($option) {
@@ -228,16 +241,16 @@ $(document).ready(function() {
         // Enable next button
         updateNavigation();
         
-        // Track high-risk responses (for sensitive questions)
+        // Track high-risk responses
         trackQuestionResponse(value);
         
-        // Auto-advance after 1.5 seconds (slightly longer than PHQ-9 for DASS-21)
+        // Auto-advance after 1.5 seconds for DASS-21 (slightly longer)
         setTimeout(() => {
             if (currentQuestion < questions.length - 1) {
                 nextQuestion();
             } else {
                 // Last question - enable submit
-                $('#nextBtn').text('Selesai').removeClass('btn-pastel-secondary').addClass('btn-pastel-success');
+                $('#nextBtn').text('Selesaikan Skrining').removeClass('btn-pastel-secondary').addClass('btn-pastel-success');
             }
         }, 1500);
     }
@@ -248,6 +261,7 @@ $(document).ready(function() {
             displayCurrentQuestion();
             updateProgress();
             updateNavigation();
+            updateTimeEstimate();
         } else {
             // Submit quiz
             submitQuiz();
@@ -283,7 +297,7 @@ $(document).ready(function() {
             $('#nextBtn').prop('disabled', false);
             
             if (currentQuestion === questions.length - 1) {
-                $('#nextBtn').text('Selesai').removeClass('btn-pastel-secondary').addClass('btn-pastel-success');
+                $('#nextBtn').text('Selesaikan Skrining').removeClass('btn-pastel-secondary').addClass('btn-pastel-success');
             } else {
                 $('#nextBtn').text('Selanjutnya').removeClass('btn-pastel-success').addClass('btn-pastel-primary');
             }
@@ -292,16 +306,42 @@ $(document).ready(function() {
             $('#nextBtn').removeClass('btn-pastel-primary btn-pastel-success').addClass('btn-pastel-secondary');
             
             if (currentQuestion === questions.length - 1) {
-                $('#nextBtn').text('Selesai');
+                $('#nextBtn').text('Selesaikan Skrining');
             } else {
                 $('#nextBtn').text('Selanjutnya');
             }
         }
     }
     
+    function updateTimeEstimate() {
+        if (!startTime || Object.keys(answers).length === 0) {
+            $('#timeEstimate').text('-');
+            return;
+        }
+        
+        const elapsed = (Date.now() - startTime) / 1000 / 60; // minutes
+        const answeredCount = Object.keys(answers).length;
+        const avgTimePerQuestion = elapsed / answeredCount;
+        const remainingQuestions = questions.length - (currentQuestion + 1);
+        const estimatedTimeRemaining = Math.ceil(avgTimePerQuestion * remainingQuestions);
+        
+        $('#timeEstimate').text(estimatedTimeRemaining > 0 ? estimatedTimeRemaining : '< 1');
+    }
+    
+    function trackSensitiveQuestion() {
+        // Questions about self-harm, suicidal ideation, etc. (indices 18, 19, 29)
+        const sensitiveQuestions = [18, 19, 29];
+        
+        if (sensitiveQuestions.includes(currentQuestion)) {
+            trackUserInteraction('sensitive_question_viewed', {
+                question_index: currentQuestion,
+                question_type: 'high_sensitivity'
+            });
+        }
+    }
+    
     function trackQuestionResponse(value) {
-        // Track high-risk responses for sensitive questions (self-harm, suicidal ideation, etc.)
-        const sensitiveQuestions = [18, 19, 29]; // Adjust indices based on your questions
+        const sensitiveQuestions = [18, 19, 29]; // Self-harm, suicidal ideation questions
         
         if (sensitiveQuestions.includes(currentQuestion) && (value === 'Sering' || value === 'Sering Sekali')) {
             // Log for immediate follow-up (without storing actual response)
@@ -351,7 +391,7 @@ $(document).ready(function() {
         // Track completion
         trackUserInteraction('dass21_completed', {
             total_questions: questions.length,
-            completion_time: getCompletionTime()
+            completion_time: startTime ? (Date.now() - startTime) / 1000 : 0
         });
         
         // Clear backup
@@ -361,27 +401,13 @@ $(document).ready(function() {
         $form.submit();
     }
     
-    function getCompletionTime() {
-        const startTime = sessionStorage.getItem('dass21_start_time');
-        if (startTime) {
-            return (Date.now() - parseInt(startTime)) / 1000;
-        }
-        return 0;
-    }
-    
-    // Track start time when quiz actually starts
-    function trackStartTime() {
-        if (!sessionStorage.getItem('dass21_start_time')) {
-            sessionStorage.setItem('dass21_start_time', Date.now().toString());
-        }
-    }
-    
     // Auto-backup answers every 10 seconds
     setInterval(function() {
         if (quizStarted) {
             localStorage.setItem('dass21_answers_backup', JSON.stringify({
                 answers: answers,
                 currentQuestion: currentQuestion,
+                startTime: startTime,
                 timestamp: Date.now()
             }));
         }
@@ -396,6 +422,7 @@ $(document).ready(function() {
             if (Date.now() - data.timestamp < 2 * 60 * 60 * 1000) {
                 answers = data.answers || {};
                 currentQuestion = data.currentQuestion || 0;
+                startTime = data.startTime;
                 
                 if (Object.keys(answers).length > 0) {
                     // Auto-start if there's backup data
@@ -407,12 +434,9 @@ $(document).ready(function() {
             console.error('Error restoring backup:', e);
         }
     }
-    
-    // Set start time when starting
-    $('#startBtn').on('click', trackStartTime);
 });
 
-// Add required CSS (same as PHQ-9)
+// Add required CSS
 $('<style>')
 .prop('type', 'text/css')
 .html(`
@@ -433,10 +457,24 @@ $('<style>')
         justify-content: center;
     }
     
-    .answer-option:hover {
-        background: var(--compassion-purple-light);
+    .answer-option[data-color="success"]:hover {
+        background: var(--healing-green-light);
         transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(156, 39, 176, 0.2);
+    }
+    
+    .answer-option[data-color="info"]:hover {
+        background: var(--calm-blue-light);
+        transform: translateY(-3px);
+    }
+    
+    .answer-option[data-color="warning"]:hover {
+        background: var(--hopeful-yellow-light);
+        transform: translateY(-3px);
+    }
+    
+    .answer-option[data-color="danger"]:hover {
+        background: #ffebee;
+        transform: translateY(-3px);
     }
     
     .answer-option.selected {

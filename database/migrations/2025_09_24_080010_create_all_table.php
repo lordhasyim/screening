@@ -29,6 +29,7 @@ return new class extends Migration
         Schema::create('admin_users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('nip', 50)->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -41,7 +42,7 @@ return new class extends Migration
         // Create quiz responses table - main table for storing responses
         Schema::create('quiz_responses', function (Blueprint $table) {
             $table->id();
-            
+
             // Personal Identity Data (Section I)
             $table->year('student_year');
             $table->foreignId('faculty_id')->constrained();
@@ -54,44 +55,44 @@ return new class extends Migration
             $table->string('phone', 20);
             $table->text('address');
             $table->enum('living_arrangement', [
-                'Kos', 
-                'Rumah orang tua', 
-                'Rumah keluarga', 
-                'Asrama', 
-                'Kontrak'
+                'Kos',
+                'Rumah orang tua',
+                'Rumah keluarga',
+                'Asrama',
+                'Kontrak',
             ]);
             $table->string('origin_province');
             $table->enum('origin_area_type', [
-                'perkotaan', 
-                'pedesaan', 
-                'pinggiran kota', 
-                'daerah terpencil', 
-                'daerah industri'
+                'perkotaan',
+                'pedesaan',
+                'pinggiran kota',
+                'daerah terpencil',
+                'daerah industri',
             ]);
             $table->string('email')->nullable();
             $table->string('religion');
             $table->enum('parents_marital_status', [
-                'menikah', 
-                'cerai hidup', 
-                'cerai mati', 
-                'pisah tidak resmi', 
-                'menikah lagi'
+                'menikah',
+                'cerai hidup',
+                'cerai mati',
+                'pisah tidak resmi',
+                'menikah lagi',
             ]);
             $table->integer('child_order');
             $table->integer('siblings_count');
             $table->string('scholarship')->nullable();
             $table->string('admission_path');
             $table->enum('parents_education', [
-                'SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3'
+                'SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3',
             ]);
             $table->enum('parents_income', [
-                '<2000000', 
-                '2000000-5000000', 
-                '5000000-10000000', 
-                '>10000000'
+                '<2000000',
+                '2000000-5000000',
+                '5000000-10000000',
+                '>10000000',
             ]);
             $table->integer('family_members_count');
-            
+
             // Medical History Questions (22-28)
             $table->boolean('has_chronic_disease')->default(false);
             $table->text('chronic_disease_details')->nullable();
@@ -106,30 +107,30 @@ return new class extends Migration
             $table->boolean('family_mental_health_history')->default(false);
             $table->text('family_history_details')->nullable();
             $table->text('family_relationship_description')->nullable();
-            
+
             // Quiz Progress Tracking
             $table->enum('quiz_status', [
-                'started', 
-                'phq9_completed', 
-                'dass21_completed', 
-                'completed'
+                'started',
+                'phq9_completed',
+                'dass21_completed',
+                'completed',
             ])->default('started');
-            
+
             // Store responses as JSON for flexibility
             $table->json('phq9_responses')->nullable(); // Questions 1-9
             $table->json('dass21_responses')->nullable(); // Questions 1-30
-            
+
             // Calculated Scores
             $table->integer('phq9_total_score')->nullable();
             $table->string('phq9_category')->nullable();
             $table->integer('dass21_total_score')->nullable();
             $table->string('dass21_category')->nullable();
-            
+
             // Risk Assessment
             $table->enum('overall_risk_level', [
-                'Low', 'Moderate', 'High', 'Critical'
+                'Low', 'Moderate', 'High', 'Critical',
             ])->nullable();
-            
+
             // Completion tracking
             $table->boolean('phq9_passed_threshold')->default(false);
             $table->boolean('needs_dass21')->default(false);
@@ -137,9 +138,9 @@ return new class extends Migration
             $table->timestamp('phq9_completed_at')->nullable();
             $table->timestamp('dass21_completed_at')->nullable();
             $table->timestamp('completed_at')->nullable();
-            
+
             $table->timestamps();
-            
+
             // Indexes for performance
             $table->index(['quiz_status']);
             $table->index(['phq9_category', 'dass21_category']);
@@ -158,7 +159,7 @@ return new class extends Migration
             $table->json('temp_data')->nullable(); // Store incomplete form data
             $table->timestamp('expires_at');
             $table->timestamps();
-            
+
             $table->index(['session_token']);
             $table->index(['expires_at']);
         });
@@ -171,7 +172,7 @@ return new class extends Migration
             $table->text('description');
             $table->json('metadata')->nullable();
             $table->timestamps();
-            
+
             $table->index(['admin_user_id', 'created_at']);
         });
     }
