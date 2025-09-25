@@ -18,6 +18,8 @@
     
     <!-- Custom BIMA Dashboard CSS -->
     <link href="{{ asset('css/admin-dashboard.css') }}" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+
     
     @stack('styles')
 </head>

@@ -14,6 +14,7 @@
     <!-- Custom CSS -->
     {{-- <link href="{{ asset('css/style.css') }}" rel="stylesheet"> --}}
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
     
     
