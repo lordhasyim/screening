@@ -18,12 +18,12 @@
             <div class="d-flex justify-content-between align-items-center w-100">
                 <div class="logo-container">
                     <img src="/images/um-logo.png" alt="UM Logo" class="um-logo">
-                    <img src="/images/um-text-logo.png" alt="UM The Learning University" class="um-text-logo">
+                    {{-- <img src="/images/um-text-logo.png" alt="UM The Learning University" class="um-text-logo"> --}}
                 </div>
                 <div class="nav-links d-none d-md-flex">
+                    {{-- <a href="#" class="nav-link-custom">Lorem Ipsum</a>
                     <a href="#" class="nav-link-custom">Lorem Ipsum</a>
-                    <a href="#" class="nav-link-custom">Lorem Ipsum</a>
-                    <a href="#" class="nav-link-custom">Lorem Ipsum</a>
+                    <a href="#" class="nav-link-custom">Lorem Ipsum</a> --}}
                 </div>
             </div>
         </div>
