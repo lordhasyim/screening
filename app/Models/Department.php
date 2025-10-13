@@ -9,7 +9,7 @@ class Department extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['faculty_id', 'name', 'code'];
+    protected $fillable = ['faculty_id', 'name', 'code', 'level'];
 
     public function faculty()
     {

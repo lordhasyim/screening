@@ -103,8 +103,8 @@
                             <div class="feature-icon">
                                 <i class="bi bi-graph-up"></i>
                             </div>
-                            <h6 class="feature-title">Hasil Instan</h6>
-                            <p class="feature-desc">Langsung mendapat hasil skrining</p>
+                            <h6 class="feature-title">Tim Um</h6>
+                            <p class="feature-desc">dibuat oleh Tim Satgas Kesehatan Mental Universitas Negeri Malang</p>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-3">
@@ -161,10 +161,9 @@
                             <div class="info-icon">
                                 <i class="bi bi-heart-pulse"></i>
                             </div>
-                            <h5 class="info-title">Kesehatan Mental Penting</h5>
+                            <h5 class="info-title">Tim Satgas Kesehatan Mental UM</h5>
                             <p class="info-desc">
-                                Kesehatan mental sama pentingnya dengan kesehatan fisik. 
-                                Deteksi dini membantu pencegahan dan penanganan yang tepat.
+                                dibuat oleh Tim Satgas Kesehatan Mental Universitas Negeri Malang
                             </p>
                         </div>
                     </div>
