@@ -40,6 +40,9 @@ Route::prefix('api/quiz')->group(function () {
     Route::get('/departments/{facultyId}', [QuizController::class, 'getDepartments']);
     Route::get('/provinces', [QuizController::class, 'getProvinces']);
     Route::get('/cities/{provinceId}', [QuizController::class, 'getCities']);
+    // Add this with your other quiz routes
+    // WRONG - has double prefix
+    Route::get('/departments/{department}/levels', [QuizController::class, 'getDepartmentLevels']);
 });
 /*
 |--------------------------------------------------------------------------

@@ -44,7 +44,14 @@ class QuizController extends Controller
             $validated = $request->validate([
                 'student_year' => 'required|integer|min:2020|max:' . (date('Y') + 1),
                 'faculty_id' => 'required|exists:faculties,id',
-                'department_id' => 'required|exists:departments,id',
+                'department_id' => [
+                    'required',
+                    'exists:departments,id',
+                    Rule::exists('departments', 'id')->where(function ($query) use ($request) {
+                        $query->where('faculty_id', $request->faculty_id);
+                    })
+                ],
+                'education_level' => ['required', Rule::in(['D4', 'S1', 'Pascasarjana'])],
                 'nim' => [
                     'required',
                     'string',
@@ -94,6 +101,9 @@ class QuizController extends Controller
                 'family_relationship_description' => 'nullable|string|max:1000',
             ], [
                 // Custom error messages
+                'education_level.required' => 'Jenjang pendidikan harus dipilih.',
+                'education_level.in' => 'Jenjang pendidikan tidak valid.',
+                'department_id.exists' => 'Jurusan tidak sesuai dengan fakultas yang dipilih.',
                 'nim.unique' => 'NIM sudah terdaftar dalam sistem.',
                 'nim.regex' => 'NIM hanya boleh berisi angka.',
                 'phone.regex' => 'Format nomor telepon tidak valid. Gunakan format: 08xxxxxxxxxx',
@@ -106,6 +116,14 @@ class QuizController extends Controller
                 'full_name.min' => 'Nama lengkap minimal 2 karakter.',
                 'birth_place.min' => 'Tempat lahir minimal 2 karakter.',
             ]);
+
+            // Additional validation: Check if selected level is available for the department
+            $department = Department::find($validated['department_id']);
+            if ($department && !$department->hasLevel($validated['education_level'])) {
+                return back()->withErrors([
+                    'education_level' => 'Jenjang pendidikan tidak tersedia untuk jurusan ini.'
+                ])->withInput();
+            }
 
             // Additional validation logic
             if ($validated['child_order'] > $validated['siblings_count']) {
@@ -441,6 +459,28 @@ class QuizController extends Controller
         } catch (\Exception $e) {
             Log::error('Error getting all cities: ' . $e->getMessage());
             return response()->json(['error' => 'Gagal memuat data kota/kabupaten'], 500);
+        }
+    }
+
+    // API endpoint to get available education levels for a department
+    public function getDepartmentLevels($departmentId)
+    {
+        try {
+            $department = Department::findOrFail($departmentId);
+            $levels = $department->getAvailableLevels();
+
+            // Return levels with display names
+            $levelsWithNames = array_map(function ($level) {
+                return [
+                    'value' => $level,
+                    'label' => Department::getLevelDisplayName($level)
+                ];
+            }, $levels);
+
+            return response()->json($levelsWithNames);
+        } catch (\Exception $e) {
+            Log::error('Error getting department levels: ' . $e->getMessage());
+            return response()->json(['error' => 'Department not found'], 404);
         }
     }
 }

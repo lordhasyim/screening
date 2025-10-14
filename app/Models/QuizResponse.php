@@ -10,7 +10,12 @@ class QuizResponse extends Model
     use HasFactory;
 
     protected $fillable = [
-        'student_year', 'faculty_id', 'department_id', 'nim', 'full_name',
+        'student_year',
+        'faculty_id',
+        'department_id',
+        'education_level',
+        'nim',
+        'full_name',
         'gender', 'birth_place', 'birth_date', 'phone', 'address', 
         'living_arrangement', 'origin_province', 'origin_area_type', 
         'email', 'religion', 'parents_marital_status', 'child_order', 
