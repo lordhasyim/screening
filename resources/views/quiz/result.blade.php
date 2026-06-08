@@ -74,11 +74,11 @@
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1">
                                 <small class="text-muted">Skor Total</small>
-                                <small class="fw-bold">{{ $quizResponse->phq9_total_score }} / 27</small>
+                                <small class="fw-bold">{{ $quizResponse->phq9_total_score }} / 36</small>
                             </div>
                             <div class="progress progress-pastel">
-                                <div class="progress-bar progress-bar-pastel" 
-                                     style="width: {{ ($quizResponse->phq9_total_score / 27) * 100 }}%;"></div>
+                                <div class="progress-bar progress-bar-pastel"
+                                     style="width: {{ ($quizResponse->phq9_total_score / 36) * 100 }}%;"></div>
                             </div>
                         </div>
                         
@@ -105,11 +105,11 @@
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1">
                                 <small class="text-muted">Skor Total</small>
-                                <small class="fw-bold">{{ $quizResponse->dass21_total_score }} / 90</small>
+                                <small class="fw-bold">{{ $quizResponse->dass21_total_score }} / 120</small>
                             </div>
                             <div class="progress progress-pastel">
-                                <div class="progress-bar progress-bar-pastel" 
-                                     style="width: {{ ($quizResponse->dass21_total_score / 90) * 100 }}%;"></div>
+                                <div class="progress-bar progress-bar-pastel"
+                                     style="width: {{ ($quizResponse->dass21_total_score / 120) * 100 }}%;"></div>
                             </div>
                         </div>
                         
