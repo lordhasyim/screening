@@ -100,14 +100,14 @@ class QuizResponse extends Model
         return ['score' => $score, 'category' => $category];
     }
 
-    // Convert response text to numeric score (0-3)
+    // Convert response text to numeric score (1-4, sesuai Skala 1-4 referensi)
     private function convertResponseToNumeric($response)
     {
         $scoreMap = [
-            'Tidak Pernah' => 0,
-            'Kadang-Kadang' => 1,
-            'Sering' => 2,
-            'Sering Sekali' => 3
+            'Tidak Pernah' => 1,
+            'Kadang-Kadang' => 2,
+            'Sering' => 3,
+            'Sering Sekali' => 4
         ];
 
         return $scoreMap[$response] ?? 0;
@@ -137,7 +137,7 @@ class QuizResponse extends Model
     public function shouldContinueToDass21()
     {
         $phqResult = $this->calculatePhq9Score();
-        return in_array($phqResult['category'], ['Sedang', 'Tinggi', 'Sangat tinggi']);
+        return in_array($phqResult['category'], ['Tinggi', 'Sangat tinggi']);
     }
 
     // Calculate overall risk level
