@@ -781,12 +781,14 @@
                                     </a>
                                 </div>
                                 <div class="d-flex align-items-center">
-                                    <div id="form-progress" class="me-3" style="display: none;">
-                                        <small class="text-muted">
-                                            <span id="filled-fields">0</span> dari <span id="total-fields">0</span> field
-                                            terisi
-                                        </small>
-                                    </div>
+                                    <span class="d-none d-sm-inline-flex align-items-center me-2">
+                                        <div id="form-progress" style="display: none;">
+                                            <small class="text-muted">
+                                                <span id="filled-fields">0</span> dari <span id="total-fields">0</span> field
+                                                terisi
+                                            </small>
+                                        </div>
+                                    </span>
                                     <button type="submit" id="submitForm" class="btn btn-primary" disabled>
                                         <span id="submit-text">
                                             Lanjut ke Skrining

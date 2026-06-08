@@ -53,7 +53,7 @@
 
             <!-- Quiz Container -->
             <div id="quizContainer" class="card card-pastel slide-up" style="min-height: 500px; display: none;">
-                <div class="card-body d-flex flex-column justify-content-center p-5">
+                <div class="card-body d-flex flex-column justify-content-center p-3 p-md-5">
                     
                     <!-- Question Header -->
                     <div class="text-center mb-4">
@@ -101,15 +101,15 @@
 
                     <!-- Navigation Buttons -->
                     <div class="d-flex justify-content-between align-items-center">
-                        <button type="button" id="prevBtn" class="btn btn-pastel-secondary" style="visibility: hidden;">
+                        <button type="button" id="prevBtn" class="btn btn-pastel-secondary flex-shrink-0" style="visibility: hidden;">
                             <i class="bi bi-arrow-left me-2"></i>Sebelumnya
                         </button>
-                        
-                        <div class="text-center">
+
+                        <div class="text-center d-none d-sm-block mx-2">
                             <small class="text-muted">Pilih jawaban untuk melanjutkan</small>
                         </div>
-                        
-                        <button type="button" id="nextBtn" class="btn btn-pastel-secondary" disabled>
+
+                        <button type="button" id="nextBtn" class="btn btn-pastel-secondary flex-shrink-0" disabled>
                             Selanjutnya<i class="bi bi-arrow-right ms-2"></i>
                         </button>
                     </div>
