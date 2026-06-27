@@ -25,6 +25,9 @@ class QuizController extends Controller
     // Show identity form (first step)
     public function identity()
     {
+        // Clear previous quiz session so shared devices always start clean
+        session()->forget('quiz_response_id');
+
         try {
             $faculties = Faculty::with('departments')->orderBy('name')->get();
             $provinces = Province::whereNull('removed_at')->orderBy('name')->get();
@@ -61,7 +64,6 @@ class QuizController extends Controller
                     'required',
                     'string',
                     'max:50',
-                    'unique:quiz_responses,nim',
                     'regex:/^[0-9]+$/'
                 ],
                 'full_name' => 'required|string|max:255|min:2',
@@ -109,7 +111,6 @@ class QuizController extends Controller
                 'education_level.required' => 'Jenjang pendidikan harus dipilih.',
                 'education_level.in' => 'Jenjang pendidikan tidak valid.',
                 'department_id.exists' => 'Jurusan tidak sesuai dengan fakultas yang dipilih.',
-                'nim.unique' => 'NIM sudah terdaftar dalam sistem.',
                 'nim.regex' => 'NIM hanya boleh berisi angka.',
                 'phone.regex' => 'Format nomor telepon tidak valid. Gunakan format: 08xxxxxxxxxx',
                 'birth_date.before' => 'Tanggal lahir harus sebelum hari ini.',
@@ -188,12 +189,41 @@ class QuizController extends Controller
             DB::beginTransaction();
 
             try {
-                // Create quiz response with identity data
-                $quizResponse = QuizResponse::create([
-                    ...$validated,
-                    'quiz_status' => 'started',
-                    'started_at' => now(),
-                ]);
+                $existingResponse = QuizResponse::where('nim', $validated['nim'])->first();
+
+                if ($existingResponse) {
+                    if ($existingResponse->quiz_status === 'completed') {
+                        DB::rollBack();
+                        return back()
+                            ->withErrors(['nim' => 'NIM ini sudah menyelesaikan skrining kesehatan mental. Hubungi admin jika ada kesalahan.'])
+                            ->withInput();
+                    }
+                    // Incomplete — overwrite identity data and reset quiz progress
+                    $existingResponse->update([
+                        ...$validated,
+                        'quiz_status' => 'started',
+                        'started_at' => now(),
+                        'phq9_responses' => null,
+                        'dass21_responses' => null,
+                        'phq9_total_score' => null,
+                        'phq9_category' => null,
+                        'dass21_total_score' => null,
+                        'dass21_category' => null,
+                        'overall_risk_level' => null,
+                        'phq9_passed_threshold' => null,
+                        'needs_dass21' => null,
+                        'phq9_completed_at' => null,
+                        'dass21_completed_at' => null,
+                        'completed_at' => null,
+                    ]);
+                    $quizResponse = $existingResponse;
+                } else {
+                    $quizResponse = QuizResponse::create([
+                        ...$validated,
+                        'quiz_status' => 'started',
+                        'started_at' => now(),
+                    ]);
+                }
 
                 // Store quiz ID in session and redirect to PHQ-9
                 session(['quiz_response_id' => $quizResponse->id]);
