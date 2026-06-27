@@ -7,7 +7,7 @@
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Dashboard Overview</h1>
-    <div class="d-flex gap-2">
+    <div class="d-flex" style="gap: 0.5rem;">
         <button class="btn btn-success btn-sm" onclick="exportDashboardData()">
             <i class="fas fa-download fa-sm text-white-50"></i> Export Data
         </button>
@@ -20,13 +20,15 @@
 <!-- Alert Container -->
 <div id="alertContainer">
     @foreach($alerts as $alert)
-        <div class="alert alert-admin-{{ $alert['type'] }} alert-dismissible fade show" role="alert">
-            <i class="{{ $alert['icon'] }} me-2"></i>
+        <div class="alert alert-{{ $alert['type'] }} alert-dismissible fade show" role="alert">
+            <i class="{{ $alert['icon'] }} mr-2"></i>
             <strong>{{ $alert['title'] }}:</strong> {{ $alert['message'] }}
             @if($alert['action_url'])
-                <a href="{{ $alert['action_url'] }}" class="alert-link ms-2">{{ $alert['action_text'] }}</a>
+                <a href="{{ $alert['action_url'] }}" class="alert-link ml-2">{{ $alert['action_text'] }}</a>
             @endif
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
     @endforeach
 </div>
