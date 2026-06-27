@@ -44,14 +44,19 @@ class QuizController extends Controller
             $validated = $request->validate([
                 'student_year' => 'required|integer|min:2020|max:' . (date('Y') + 1),
                 'faculty_id' => 'required|exists:faculties,id',
-                'department_id' => [
+                'department_id' => $request->department_id === 'other' ? ['nullable'] : [
                     'required',
                     'exists:departments,id',
                     Rule::exists('departments', 'id')->where(function ($query) use ($request) {
                         $query->where('faculty_id', $request->faculty_id);
                     })
                 ],
-                'education_level' => ['required', Rule::in(['D4', 'S1', 'Pascasarjana'])],
+                'department_name' => $request->department_id === 'other'
+                    ? ['required', 'string', 'max:150']
+                    : ['nullable'],
+                'education_level' => $request->department_id === 'other'
+                    ? ['nullable']
+                    : ['required', Rule::in(['D4', 'S1', 'Pascasarjana'])],
                 'nim' => [
                     'required',
                     'string',
@@ -67,7 +72,7 @@ class QuizController extends Controller
                     'required',
                     'string',
                     'max:20',
-                    'regex:/^(\+62|62|0)8[1-9][0-9]{6,9}$/'
+                    'regex:/^[0-9]+$/',
                 ],
                 'address' => 'required|string|min:10',
                 'living_arrangement' => ['required', Rule::in(['Kos', 'Rumah orang tua', 'Rumah keluarga', 'Asrama', 'Kontrak'])],
@@ -117,8 +122,19 @@ class QuizController extends Controller
                 'birth_place.min' => 'Tempat lahir minimal 2 karakter.',
             ]);
 
-            // Additional validation: Check if selected level is available for the department
-            $department = Department::find($validated['department_id']);
+            // Resolve 'other' department selection
+            if ($request->department_id === 'other') {
+                $validated['department_id'] = null;
+                $validated['department_name'] = $request->department_name;
+                $validated['education_level'] = null;
+            } else {
+                $validated['department_name'] = null;
+            }
+
+            // Check if selected level is available for the department
+            $department = isset($validated['department_id'])
+                ? Department::find($validated['department_id'])
+                : null;
             if ($department && !$department->hasLevel($validated['education_level'])) {
                 return back()->withErrors([
                     'education_level' => 'Jenjang pendidikan tidak tersedia untuk jurusan ini.'

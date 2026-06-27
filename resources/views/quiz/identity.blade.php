@@ -7,6 +7,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-5-theme/1.3.0/select2-bootstrap-5-theme.min.css"
         rel="stylesheet">
+    <!-- Flatpickr -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css" rel="stylesheet">
     <style>
         /* Custom styles for better form appearance */
         .form-control-pastel,
@@ -36,6 +38,29 @@
         .select2-container--bootstrap-5.select2-container--focus .select2-selection {
             border-color: #4e73df !important;
             box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25) !important;
+        }
+
+        .select2-container--bootstrap-5.is-invalid .select2-selection {
+            border-color: #e74a3b !important;
+        }
+
+        .select2-container--bootstrap-5.select2-container--disabled .select2-selection {
+            background-color: #f8f9fa !important;
+            cursor: not-allowed !important;
+            opacity: 0.6 !important;
+            border-color: #dee2e6 !important;
+        }
+
+        /* Never auto-show city error — only JS can reveal it */
+        #city-error { display: none !important; }
+        #city-error.visible { display: block !important; }
+
+        /* Suppress Bootstrap 5's auto checkmark on :valid selects — we handle validation ourselves */
+        select.form-select-pastel:valid:not(.is-invalid) {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+            background-size: 16px 12px;
+            background-position: right 0.75rem center;
+            border-color: #e1e8ed;
         }
 
         .loading-spinner {
@@ -156,7 +181,7 @@
                                             class="form-select form-select-pastel @error('student_year') is-invalid @enderror"
                                             required>
                                             <option value="">Pilih Angkatan</option>
-                                            @for ($year = 2020; $year <= date('Y') + 1; $year++)
+                                            @for ($year = 2015; $year <= date('Y') + 1; $year++)
                                                 <option value="{{ $year }}"
                                                     {{ old('student_year') == $year ? 'selected' : '' }}>
                                                     {{ $year }}
@@ -199,6 +224,15 @@
                                         </select>
                                         <div id="department-loading" style="display: none;" class="mt-2">
                                             <span class="loading-spinner"></span> Memuat jurusan...
+                                        </div>
+                                        <div id="department-other-container" style="display: none;" class="mt-2">
+                                            <input type="text" id="department_name" name="department_name"
+                                                class="form-control form-control-pastel @error('department_name') is-invalid @enderror"
+                                                placeholder="Tulis nama jurusan Anda"
+                                                value="{{ old('department_name') }}">
+                                            @error('department_name')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         @error('department_id')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -306,15 +340,15 @@
                                             Kota/Kabupaten Asal
                                         </label>
                                         <select id="origin_city_id" name="origin_city_id"
-                                            class="form-select form-select-pastel select2-city @error('origin_city_id') is-invalid @enderror"
-                                            required disabled>
+                                            class="form-select form-select-pastel select2-city"
+                                            disabled>
                                             <option value="">Pilih Provinsi dulu</option>
                                         </select>
                                         <div id="city-loading" style="display: none;" class="mt-2">
                                             <span class="loading-spinner"></span> Memuat kota/kabupaten...
                                         </div>
                                         @error('origin_city_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            <div class="invalid-feedback" id="city-error">{{ $message }}</div>
                                         @enderror
                                     </div>
 
@@ -331,15 +365,20 @@
                                     </div>
 
                                     <div class="col-md-4">
-                                        <label for="birth_date" class="form-label fw-semibold required-field">
+                                        <label for="birth_date_display" class="form-label fw-semibold required-field">
                                             Tanggal Lahir
                                         </label>
-                                        <input type="date" id="birth_date" name="birth_date"
-                                            class="form-control form-control-pastel @error('birth_date') is-invalid @enderror"
-                                            value="{{ old('birth_date') }}" required
-                                            max="{{ date('Y-m-d', strtotime('-17 years')) }}">
+                                        <input type="hidden" id="birth_date" name="birth_date" value="{{ old('birth_date') }}">
+                                        <div class="input-group">
+                                            <input type="text" id="birth_date_display"
+                                                class="form-control form-control-pastel @error('birth_date') is-invalid @enderror"
+                                                placeholder="Pilih tanggal lahir" readonly autocomplete="off">
+                                            <span class="input-group-text" style="cursor:pointer" onclick="document.getElementById('birth_date_display')._flatpickr.open()">
+                                                <i class="bi bi-calendar3"></i>
+                                            </span>
+                                        </div>
                                         @error('birth_date')
-                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
                                     </div>
 
@@ -347,9 +386,10 @@
                                         <label for="phone" class="form-label fw-semibold required-field">
                                             Nomor Telepon/HP
                                         </label>
-                                        <input type="tel" id="phone" name="phone"
+                                        <input type="text" id="phone" name="phone"
                                             class="form-control form-control-pastel @error('phone') is-invalid @enderror"
-                                            value="{{ old('phone') }}" required placeholder="08xxxxxxxxxx">
+                                            value="{{ old('phone') }}" required placeholder="08xxxxxxxxxx"
+                                            inputmode="numeric" pattern="[0-9]*" maxlength="20">
                                         @error('phone')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -811,15 +851,19 @@
     @push('scripts')
         <!-- Select2 JS -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+        <!-- Flatpickr -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/id.min.js"></script>
 
         <script>
             $(document).ready(function() {
-                // Initialize Select2 for city dropdown
+                // Initialize Select2 for city dropdown — only once, never destroy/reinit
                 $('#origin_city_id').select2({
                     theme: 'bootstrap-5',
                     placeholder: 'Pilih Kota/Kabupaten',
                     allowClear: true,
-                    width: '100%'
+                    width: '100%',
+                    minimumResultsForSearch: 5
                 });
 
                 // Initialize form validation
@@ -859,13 +903,12 @@
                                         options +=
                                             `<option value="${dept.id}" ${selected}>${dept.name}</option>`;
                                     });
+                                    options += '<option value="other" {{ old("department_id") === "other" ? "selected" : "" }}>-- Jurusan saya tidak ada dalam daftar --</option>';
                                     $departmentSelect.html(options).prop('disabled', false);
                                 } else {
-                                    $departmentSelect.html(
-                                        '<option value="">Tidak ada jurusan tersedia</option>');
-                                    showNotification(
-                                        'Tidak ada jurusan tersedia untuk fakultas ini',
-                                        'warning');
+                                    let options = '<option value="">Pilih Jurusan</option>';
+                                    options += '<option value="other" {{ old("department_id") === "other" ? "selected" : "" }}>-- Jurusan saya tidak ada dalam daftar --</option>';
+                                    $departmentSelect.html(options).prop('disabled', false);
                                 }
                             },
                             error: function(xhr, status, error) {
@@ -900,6 +943,22 @@
                     const $levelSelect = $('#education_level');
                     const $levelContainer = $('#level-container');
                     const $levelLoading = $('#level-loading');
+                    const $otherContainer = $('#department-other-container');
+                    const $otherInput = $('#department_name');
+
+                    // Handle "other" selection
+                    if (departmentId === 'other') {
+                        $levelSelect.prop('disabled', true).val('').html('<option value="">Pilih Jurusan dulu</option>');
+                        $levelContainer.hide();
+                        $otherContainer.show();
+                        $otherInput.prop('required', true);
+                        validateForm();
+                        return;
+                    }
+
+                    // Real department selected — hide other input
+                    $otherContainer.hide();
+                    $otherInput.prop('required', false).val('');
 
                     // Reset level select
                     $levelSelect.prop('disabled', true).html('<option value="">Pilih Jurusan dulu</option>');
@@ -1015,39 +1074,21 @@
                                         options +=
                                             `<option value="${city.id}" ${selected}>${city.name}</option>`;
                                     });
-                                    $citySelect.html(options).prop('disabled', false);
-
-                                    // Reinitialize Select2 after updating options
-                                    $citySelect.select2('destroy').select2({
-                                        theme: 'bootstrap-5',
-                                        placeholder: 'Pilih Kota/Kabupaten',
-                                        allowClear: true,
-                                        width: '100%'
-                                    });
+                                    $citySelect.html(options).prop('disabled', false).trigger('change');
 
                                     // Restore old value if exists
                                     if ("{{ old('origin_city_id') }}") {
-                                        $citySelect.val("{{ old('origin_city_id') }}").trigger(
-                                            'change');
+                                        $citySelect.val("{{ old('origin_city_id') }}").trigger('change');
                                     }
+
+                                    // Show city error only now (after cities loaded) if city was still not selected
                                 } else {
-                                    $citySelect.html(
-                                        '<option value="">Tidak ada kota/kabupaten tersedia</option>'
-                                    );
-                                    $citySelect.select2('destroy').select2({
-                                        theme: 'bootstrap-5',
-                                        placeholder: 'Tidak ada data tersedia',
-                                        allowClear: true,
-                                        width: '100%'
-                                    });
-                                    showNotification(
-                                        'Tidak ada kota/kabupaten tersedia untuk provinsi ini',
-                                        'warning');
+                                    $citySelect.html('<option value="">Tidak ada kota/kabupaten tersedia</option>').trigger('change');
+                                    showNotification('Tidak ada kota/kabupaten tersedia untuk provinsi ini', 'warning');
                                 }
                             },
                             error: function(xhr, status, error) {
                                 $loading.hide();
-                                $citySelect.html('<option value="">Error memuat data</option>');
 
                                 let errorMessage = 'Gagal memuat data kota/kabupaten. ';
                                 if (status === 'timeout') {
@@ -1060,25 +1101,13 @@
                                     errorMessage += 'Periksa koneksi internet Anda.';
                                 }
 
-                                $citySelect.select2('destroy').select2({
-                                    theme: 'bootstrap-5',
-                                    placeholder: 'Error memuat data',
-                                    allowClear: true,
-                                    width: '100%'
-                                });
-
+                                $citySelect.html('<option value="">Error memuat data</option>').trigger('change');
                                 showNotification(errorMessage, 'error');
                             }
                         });
                     } else {
                         $loading.hide();
-                        $citySelect.html('<option value="">Pilih Provinsi dulu</option>');
-                        $citySelect.select2('destroy').select2({
-                            theme: 'bootstrap-5',
-                            placeholder: 'Pilih Provinsi dulu',
-                            allowClear: true,
-                            width: '100%'
-                        });
+                        $citySelect.html('<option value="">Pilih Provinsi dulu</option>').trigger('change');
                     }
 
                     validateForm();
@@ -1086,6 +1115,10 @@
 
                 // City select change handler
                 $('#origin_city_id').on('change', function() {
+                    if ($(this).val()) {
+                        $(this).next('.select2-container').removeClass('is-invalid');
+                        $('#city-error').removeClass('visible');
+                    }
                     // Auto-fill birth_place with selected city
                     const selectedCityText = $(this).find('option:selected').text();
                     if (selectedCityText && selectedCityText !== 'Pilih Kota/Kabupaten' && selectedCityText !==
@@ -1167,6 +1200,12 @@
                     $('#faculty_id').trigger('change');
                 @endif
 
+                // Restore "other" department state on validation error
+                @if (old('department_id') === 'other')
+                    $('#department-other-container').show();
+                    $('#department_name').prop('required', true);
+                @endif
+
                 @if (old('origin_province_id'))
                     $('#origin_province_id').trigger('change');
                 @endif
@@ -1213,6 +1252,35 @@
                     }
                 }
 
+                // Birth date picker
+                const maxYear = new Date().getFullYear() - 15;
+                const minYear = new Date().getFullYear() - 60;
+                flatpickr('#birth_date_display', {
+                    locale: 'id',
+                    dateFormat: 'd/m/Y',
+                    maxDate: new Date(maxYear, 11, 31),
+                    minDate: new Date(minYear, 0, 1),
+                    disableMobile: false,
+                    onChange: function(selectedDates, dateStr) {
+                        if (selectedDates.length > 0) {
+                            const d = selectedDates[0];
+                            const iso = d.getFullYear() + '-' +
+                                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                                String(d.getDate()).padStart(2, '0');
+                            $('#birth_date').val(iso);
+                        } else {
+                            $('#birth_date').val('');
+                        }
+                        validateForm();
+                    }
+                });
+
+                // Restore old birth_date value into picker
+                const oldBirthDate = $('#birth_date').val();
+                if (oldBirthDate) {
+                    document.getElementById('birth_date_display')._flatpickr.setDate(oldBirthDate, false, 'Y-m-d');
+                }
+
                 // Initialize backup system
                 startFormBackup();
                 restoreFormBackup();
@@ -1248,14 +1316,25 @@
                 
                 requiredFields.forEach(function(fieldSelector) {
                     const $field = $(fieldSelector);
-                    
-                    // Skip if field container is hidden (like education_level before department is selected)
+
+                    // Skip education_level when level-container is hidden
                     if ($field.closest('#level-container').length && !$field.closest('#level-container').is(':visible')) {
-                        return; // Skip this field
+                        return;
                     }
-                    
+
+                    // For department_id: if 'other' is selected, validate department_name instead
+                    if (fieldSelector === '#department_id' && $field.val() === 'other') {
+                        const otherVal = $('#department_name').val();
+                        if (otherVal && otherVal.trim() !== '') {
+                            filledCount++;
+                        } else {
+                            allValid = false;
+                        }
+                        return;
+                    }
+
                     const value = $field.val();
-                    
+
                     if (value && value.trim() !== '') {
                         filledCount++;
                         $field.removeClass('is-invalid');
@@ -1336,11 +1415,6 @@
                 return nim && nim.length >= 8 && nim.length <= 15 && /^[0-9]+$/.test(nim);
             }
 
-            function validatePhone(phone) {
-                // Indonesian phone number validation
-                return phone && /^(\+62|62|0)8[1-9][0-9]{6,9}$/.test(phone.replace(/\s+/g, ''));
-            }
-
             // Add real-time validation for specific fields
             $('#nim').on('blur', function() {
                 const nim = $(this).val();
@@ -1352,14 +1426,8 @@
                 }
             });
 
-            $('#phone').on('blur', function() {
-                const phone = $(this).val();
-                if (phone && !validatePhone(phone)) {
-                    $(this).addClass('is-invalid');
-                    showNotification('Format nomor telepon tidak valid. Gunakan format: 08xxxxxxxxxx', 'warning');
-                } else {
-                    $(this).removeClass('is-invalid');
-                }
+            $('#phone').on('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
             });
 
             $('#email').on('blur', function() {

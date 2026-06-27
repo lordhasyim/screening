@@ -13,6 +13,7 @@ class QuizResponse extends Model
         'student_year',
         'faculty_id',
         'department_id',
+        'department_name',
         'education_level',
         'nim',
         'full_name',

@@ -85,6 +85,14 @@
                 </a>
             </li>
 
+            <!-- Nav Item - Faculty & Department -->
+            <li class="nav-item {{ request()->routeIs('admin.faculties.*') || request()->routeIs('admin.departments.*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('admin.faculties.index') }}">
+                    <i class="fas fa-fw fa-university"></i>
+                    <span>Fakultas & Jurusan</span>
+                </a>
+            </li>
+
             <!-- Divider -->
             <hr class="sidebar-divider">
 

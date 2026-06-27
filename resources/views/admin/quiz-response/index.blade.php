@@ -191,7 +191,12 @@
                             </td>
                             <td>
                                 <div>{{ $response->faculty->name ?? 'N/A' }}</div>
-                                <small class="text-muted">{{ $response->department->name ?? 'N/A' }}</small>
+                                <small class="text-muted">
+                                    {{ $response->department->name ?? $response->department_name ?? 'N/A' }}
+                                    @if(!$response->department_id && $response->department_name)
+                                        <span class="badge badge-warning badge-sm ml-1" title="Jurusan diinput manual">*</span>
+                                    @endif
+                                </small>
                             </td>
                             <td class="text-center">
                                 @if($response->phq9_total_score)

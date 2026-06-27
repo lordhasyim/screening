@@ -135,7 +135,12 @@
                     </tr>
                     <tr>
                         <td><strong>Department</strong></td>
-                        <td>{{ $quizResponse->department->name }}</td>
+                        <td>
+                            {{ $quizResponse->department->name ?? $quizResponse->department_name ?? 'N/A' }}
+                            @if(!$quizResponse->department_id && $quizResponse->department_name)
+                                <span class="badge badge-warning ml-1">Diinput manual</span>
+                            @endif
+                        </td>
                     </tr>
                     <tr>
                         <td><strong>Student Year</strong></td>

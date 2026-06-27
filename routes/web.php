@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FacultyController;
+use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\PublicStatsController;
 use App\Http\Controllers\QuizController;
 use Illuminate\Support\Facades\Route;
@@ -94,6 +96,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         //     Route::put('/users/{adminUser}', [DashboardController::class, 'updateUser'])->name('users.update');
         //     Route::delete('/users/{adminUser}', [DashboardController::class, 'deleteUser'])->name('users.delete');
         // });
+
+        // Faculty & Department Management
+        Route::resource('faculties', FacultyController::class);
+        Route::get('faculties/{faculty}/departments', [FacultyController::class, 'departments'])->name('faculties.departments');
+        Route::resource('departments', DepartmentController::class)->except(['show']);
 
         // // Settings
         Route::get('/settings', [DashboardController::class, 'settings'])->name('settings');
