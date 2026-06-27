@@ -211,9 +211,10 @@
                                         </label>
                                         <select id="department_id" name="department_id"
                                             class="form-select form-select-pastel @error('department_id') is-invalid @enderror"
-                                            required disabled>
+                                            disabled>
                                             <option value="">Pilih Fakultas dulu</option>
                                         </select>
+                                        <input type="hidden" id="department_id_other" name="department_id" value="other" disabled>
                                         <div id="department-loading" style="display: none;" class="mt-2">
                                             <span class="loading-spinner"></span> Memuat jurusan...
                                         </div>
@@ -878,8 +879,9 @@
                     const $loading = $('#department-loading');
 
                     // Reset department select
-                    $departmentSelect.prop('disabled', true).html(
+                    $departmentSelect.prop('disabled', true).show().html(
                         '<option value="">Pilih Fakultas dulu</option>');
+                    $('#department_id_other').prop('disabled', true);
                     $('#dept-other-link-container').hide();
                     $('#department-other-container').hide();
                     $('#department_name').prop('required', false).val('');
@@ -949,11 +951,9 @@
                     const $levelSelect = $('#education_level');
                     const $levelContainer = $('#level-container');
 
-                    // Add a hidden "other" option and select it so the form submits department_id=other
-                    if (!$departmentSelect.find('option[value="other"]').length) {
-                        $departmentSelect.append('<option value="other">other</option>');
-                    }
-                    $departmentSelect.val('other');
+                    // Hide the select, enable the hidden input so department_id=other is submitted
+                    $departmentSelect.prop('disabled', true).hide();
+                    $('#department_id_other').prop('disabled', false);
                     $levelSelect.prop('disabled', true).val('').html('<option value="">Pilih Jurusan dulu</option>');
                     $levelContainer.hide();
                     $otherContainer.show();
@@ -973,7 +973,9 @@
                     // "other" is handled by the link click handler, not here
                     if (departmentId === 'other') return;
 
-                    // When a real dept is selected, hide other input
+                    // When a real dept is selected, restore select + disable hidden input
+                    $departmentSelect.show();
+                    $('#department_id_other').prop('disabled', true);
                     $otherContainer.hide();
                     $otherInput.prop('required', false).val('');
 
@@ -1219,6 +1221,8 @@
 
                 // Restore "other" department state on validation error
                 @if (old('department_id') === 'other')
+                    $('#department_id').prop('disabled', true).hide();
+                    $('#department_id_other').prop('disabled', false);
                     $('#dept-other-link-container').show();
                     $('#department-other-container').show();
                     $('#department_name').prop('required', true);
@@ -1340,8 +1344,8 @@
                         return;
                     }
 
-                    // For department_id: if 'other' is selected, validate department_name instead
-                    if (fieldSelector === '#department_id' && $field.val() === 'other') {
+                    // For department_id: if 'other' mode is active, validate department_name instead
+                    if (fieldSelector === '#department_id' && !$('#department_id_other').prop('disabled')) {
                         const otherVal = $('#department_name').val();
                         if (otherVal && otherVal.trim() !== '') {
                             filledCount++;
