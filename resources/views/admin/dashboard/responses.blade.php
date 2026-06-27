@@ -20,71 +20,63 @@
                 <h6 class="m-0 font-weight-bold text-primary">Filter Data</h6>
             </div>
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.responses') }}" class="row g-3">
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <label for="search" class="form-label">Cari (NIM/Nama/Email)</label>
-                        <input type="text" class="form-control" name="search" id="search"
-                               value="{{ request('search') }}" placeholder="Masukkan kata kunci...">
-                    </div>
-                    
-                    <div class="col-lg-2 col-md-3 col-sm-6">
-                        <label for="faculty_id" class="form-label">Fakultas</label>
-                        <select name="faculty_id" id="faculty_id" class="form-control">
-                            <option value="">Semua Fakultas</option>
-                            @foreach($faculties as $faculty)
-                                <option value="{{ $faculty->id }}" {{ request('faculty_id') == $faculty->id ? 'selected' : '' }}>
-                                    {{ $faculty->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="col-lg-2 col-md-3 col-sm-6">
-                        <label for="risk_level" class="form-label">Tingkat Risiko</label>
-                        <select name="risk_level" id="risk_level" class="form-control">
-                            <option value="">Semua Risiko</option>
-                            <option value="Low" {{ request('risk_level') == 'Low' ? 'selected' : '' }}>Rendah</option>
-                            <option value="Moderate" {{ request('risk_level') == 'Moderate' ? 'selected' : '' }}>Sedang</option>
-                            <option value="High" {{ request('risk_level') == 'High' ? 'selected' : '' }}>Tinggi</option>
-                            <option value="Critical" {{ request('risk_level') == 'Critical' ? 'selected' : '' }}>Kritis</option>
-                        </select>
-                    </div>
-                    
-                    <div class="col-lg-2 col-md-3 col-sm-6">
-                        <label for="status" class="form-label">Status</label>
-                        <select name="status" id="status" class="form-control">
-                            <option value="">Semua Status</option>
-                            <option value="started" {{ request('status') == 'started' ? 'selected' : '' }}>Mulai</option>
-                            <option value="phq9_completed" {{ request('status') == 'phq9_completed' ? 'selected' : '' }}>PHQ9 Selesai</option>
-                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Lengkap</option>
-                        </select>
-                    </div>
-                    
-                    <div class="col-lg-2 col-md-3 col-sm-6">
-                        <label for="student_year" class="form-label">Angkatan</label>
-                        <select name="student_year" id="student_year" class="form-control">
-                            <option value="">Semua Angkatan</option>
-                            @for($year = 2020; $year <= date('Y') + 1; $year++)
-                                <option value="{{ $year }}" {{ request('student_year') == $year ? 'selected' : '' }}>
-                                    {{ $year }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
-                    
-                    <div class="col-lg-2 col-md-3 col-sm-6">
-                        <label for="date_from" class="form-label">Dari Tanggal</label>
-                        <input type="date" class="form-control" name="date_from" id="date_from" value="{{ request('date_from') }}">
-                    </div>
-                    
-                    <div class="col-lg-2 col-md-3 col-sm-6">
-                        <label for="date_to" class="form-label">Sampai Tanggal</label>
-                        <input type="date" class="form-control" name="date_to" id="date_to" value="{{ request('date_to') }}">
-                    </div>
-                    
-                    <div class="col-lg-2 col-md-3 col-sm-6 d-flex align-items-end">
-                        <div class="d-grid gap-2 d-md-flex w-100">
-                            <button type="submit" class="btn btn-primary">
+                <form method="GET" action="{{ route('admin.responses') }}">
+                    <div class="form-row align-items-end">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <label for="search">Cari (NIM/Nama/Email)</label>
+                            <input type="text" class="form-control" name="search" id="search"
+                                   value="{{ request('search') }}" placeholder="Masukkan kata kunci...">
+                        </div>
+                        <div class="col-lg-2 col-md-4 mb-3">
+                            <label for="faculty_id">Fakultas</label>
+                            <select name="faculty_id" id="faculty_id" class="form-control">
+                                <option value="">Semua Fakultas</option>
+                                @foreach($faculties as $faculty)
+                                    <option value="{{ $faculty->id }}" {{ request('faculty_id') == $faculty->id ? 'selected' : '' }}>
+                                        {{ $faculty->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-4 mb-3">
+                            <label for="risk_level">Tingkat Risiko</label>
+                            <select name="risk_level" id="risk_level" class="form-control">
+                                <option value="">Semua Risiko</option>
+                                <option value="Low" {{ request('risk_level') == 'Low' ? 'selected' : '' }}>Rendah</option>
+                                <option value="Moderate" {{ request('risk_level') == 'Moderate' ? 'selected' : '' }}>Sedang</option>
+                                <option value="High" {{ request('risk_level') == 'High' ? 'selected' : '' }}>Tinggi</option>
+                                <option value="Critical" {{ request('risk_level') == 'Critical' ? 'selected' : '' }}>Kritis</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-4 mb-3">
+                            <label for="status">Status</label>
+                            <select name="status" id="status" class="form-control">
+                                <option value="">Semua Status</option>
+                                <option value="started" {{ request('status') == 'started' ? 'selected' : '' }}>Mulai</option>
+                                <option value="phq9_completed" {{ request('status') == 'phq9_completed' ? 'selected' : '' }}>PHQ9 Selesai</option>
+                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Lengkap</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-1 col-md-3 mb-3">
+                            <label for="student_year">Angkatan</label>
+                            <select name="student_year" id="student_year" class="form-control">
+                                <option value="">Semua</option>
+                                @for($year = 2020; $year <= date('Y') + 1; $year++)
+                                    <option value="{{ $year }}" {{ request('student_year') == $year ? 'selected' : '' }}>{{ $year }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="col-lg-1 col-md-3 mb-3">
+                            <label for="date_from">Dari</label>
+                            <input type="date" class="form-control" name="date_from" id="date_from" value="{{ request('date_from') }}">
+                        </div>
+                        <div class="col-lg-1 col-md-3 mb-3">
+                            <label for="date_to">Sampai</label>
+                            <input type="date" class="form-control" name="date_to" id="date_to" value="{{ request('date_to') }}">
+                        </div>
+                        <div class="col-lg-auto col-md-3 mb-3">
+                            <label class="d-block">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary mr-2">
                                 <i class="fas fa-search"></i> Cari
                             </button>
                             <a href="{{ route('admin.responses') }}" class="btn btn-secondary">
