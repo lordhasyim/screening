@@ -889,14 +889,14 @@
 
                                 if (departments && departments.length > 0) {
                                     let options = '<option value="">Pilih Jurusan</option>';
+                                    options += '<option value="other" {{ old("department_id") === "other" ? "selected" : "" }}>-- Jurusan saya tidak ada dalam daftar --</option>';
+                                    options += '<option value="" disabled>────────────────────</option>';
                                     departments.forEach(function(dept) {
                                         const selected = "{{ old('department_id') }}" ==
                                             dept.id ? 'selected' : '';
                                         options +=
                                             `<option value="${dept.id}" ${selected}>${dept.name}</option>`;
                                     });
-                                    options += '<option value="" disabled>────────────────────</option>';
-                                    options += '<option value="other" {{ old("department_id") === "other" ? "selected" : "" }}>-- Jurusan saya tidak ada dalam daftar --</option>';
                                     $departmentSelect.html(options).prop('disabled', false).trigger('change');
                                 } else {
                                     let options = '<option value="">Pilih Jurusan</option>';
@@ -907,7 +907,9 @@
                             error: function(xhr, status, error) {
                                 $loading.hide();
                                 $departmentSelect.html(
-                                    '<option value="">Error memuat data</option>');
+                                    '<option value="">Pilih Jurusan</option>' +
+                                    '<option value="other">-- Jurusan saya tidak ada dalam daftar --</option>'
+                                ).prop('disabled', false);
 
                                 let errorMessage = 'Gagal memuat data jurusan. ';
                                 if (status === 'timeout') {
