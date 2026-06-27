@@ -21,13 +21,14 @@
             </div>
             <div class="card-body">
                 <form method="GET" action="{{ route('admin.responses') }}">
-                    <div class="form-row align-items-end">
-                        <div class="col-lg-3 col-md-6 mb-3">
+                    <!-- Row 1: Main filters -->
+                    <div class="form-row mb-3">
+                        <div class="col-lg-4 col-md-6 mb-2">
                             <label for="search">Cari (NIM/Nama/Email)</label>
                             <input type="text" class="form-control" name="search" id="search"
                                    value="{{ request('search') }}" placeholder="Masukkan kata kunci...">
                         </div>
-                        <div class="col-lg-2 col-md-4 mb-3">
+                        <div class="col-lg-2 col-md-6 mb-2">
                             <label for="faculty_id">Fakultas</label>
                             <select name="faculty_id" id="faculty_id" class="form-control">
                                 <option value="">Semua Fakultas</option>
@@ -38,7 +39,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-lg-2 col-md-4 mb-3">
+                        <div class="col-lg-2 col-md-4 mb-2">
                             <label for="risk_level">Tingkat Risiko</label>
                             <select name="risk_level" id="risk_level" class="form-control">
                                 <option value="">Semua Risiko</option>
@@ -48,7 +49,7 @@
                                 <option value="Critical" {{ request('risk_level') == 'Critical' ? 'selected' : '' }}>Kritis</option>
                             </select>
                         </div>
-                        <div class="col-lg-2 col-md-4 mb-3">
+                        <div class="col-lg-2 col-md-4 mb-2">
                             <label for="status">Status</label>
                             <select name="status" id="status" class="form-control">
                                 <option value="">Semua Status</option>
@@ -57,25 +58,27 @@
                                 <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Lengkap</option>
                             </select>
                         </div>
-                        <div class="col-lg-1 col-md-3 mb-3">
+                        <div class="col-lg-2 col-md-4 mb-2">
                             <label for="student_year">Angkatan</label>
                             <select name="student_year" id="student_year" class="form-control">
-                                <option value="">Semua</option>
+                                <option value="">Semua Angkatan</option>
                                 @for($year = 2020; $year <= date('Y') + 1; $year++)
                                     <option value="{{ $year }}" {{ request('student_year') == $year ? 'selected' : '' }}>{{ $year }}</option>
                                 @endfor
                             </select>
                         </div>
-                        <div class="col-lg-1 col-md-3 mb-3">
-                            <label for="date_from">Dari</label>
+                    </div>
+                    <!-- Row 2: Date range + action buttons -->
+                    <div class="form-row align-items-end">
+                        <div class="col-lg-3 col-md-4 mb-2">
+                            <label for="date_from">Dari Tanggal</label>
                             <input type="date" class="form-control" name="date_from" id="date_from" value="{{ request('date_from') }}">
                         </div>
-                        <div class="col-lg-1 col-md-3 mb-3">
-                            <label for="date_to">Sampai</label>
+                        <div class="col-lg-3 col-md-4 mb-2">
+                            <label for="date_to">Sampai Tanggal</label>
                             <input type="date" class="form-control" name="date_to" id="date_to" value="{{ request('date_to') }}">
                         </div>
-                        <div class="col-lg-auto col-md-3 mb-3">
-                            <label class="d-block">&nbsp;</label>
+                        <div class="col-lg-6 col-md-4 mb-2 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary mr-2">
                                 <i class="fas fa-search"></i> Cari
                             </button>
