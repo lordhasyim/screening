@@ -970,6 +970,9 @@
                     const $otherContainer = $('#department-other-container');
                     const $otherInput = $('#department_name');
 
+                    // "other" is handled by the link click handler, not here
+                    if (departmentId === 'other') return;
+
                     // When a real dept is selected, hide other input
                     $otherContainer.hide();
                     $otherInput.prop('required', false).val('');
