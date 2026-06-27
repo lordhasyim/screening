@@ -26,3 +26,16 @@ CLAUDE.md
 .mcp.json
 .claude
 /.claude
+
+
+.dockerignore
+.env.docker
+DOCKER.md
+Dockerfile
+HOSTING_COMPARISON.md
+RINCIAN_BIAYA.md
+SCORING.docx
+SCORING.md
+docker-compose.yml
+docker/
+

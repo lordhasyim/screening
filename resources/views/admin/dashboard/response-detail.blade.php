@@ -146,7 +146,7 @@
                             </tr>
                             <tr>
                                 <td><strong>Jurusan</strong></td>
-                                <td>{{ $quizResponse->department->name }}</td>
+                                <td>{{ $quizResponse->department?->name }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Tahun Mahasiswa</strong></td>
