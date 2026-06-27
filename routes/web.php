@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+// Fallback login route — redirects to admin login (Laravel auth middleware expects this name)
+Route::redirect('/login', '/admin/login')->name('login');
+
 // Welcome/Landing Page
 Route::get('/', [QuizController::class, 'index'])->name('quiz.index');
 Route::get('/statistics', [PublicStatsController::class, 'index'])->name('public.stats');
