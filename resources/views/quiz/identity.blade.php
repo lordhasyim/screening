@@ -217,6 +217,11 @@
                                         <div id="department-loading" style="display: none;" class="mt-2">
                                             <span class="loading-spinner"></span> Memuat jurusan...
                                         </div>
+                                        <div id="dept-other-link-container" style="display: none;" class="mt-1">
+                                            <a href="#" id="dept-other-link" class="small text-primary">
+                                                &#x270D; Jurusan saya tidak ada dalam daftar
+                                            </a>
+                                        </div>
                                         <div id="department-other-container" style="display: none;" class="mt-2">
                                             <input type="text" id="department_name" name="department_name"
                                                 class="form-control form-control-pastel @error('department_name') is-invalid @enderror"
@@ -875,6 +880,9 @@
                     // Reset department select
                     $departmentSelect.prop('disabled', true).html(
                         '<option value="">Pilih Fakultas dulu</option>');
+                    $('#dept-other-link-container').hide();
+                    $('#department-other-container').hide();
+                    $('#department_name').prop('required', false).val('');
 
                     if (facultyId) {
                         $loading.show();
@@ -887,29 +895,29 @@
                             success: function(departments) {
                                 $loading.hide();
 
-                                if (departments && departments.length > 0) {
+                                $('#dept-other-link-container').show();
+                                if (Array.isArray(departments) && departments.length > 0) {
                                     let options = '<option value="">Pilih Jurusan</option>';
-                                    options += '<option value="other" {{ old("department_id") === "other" ? "selected" : "" }}>-- Jurusan saya tidak ada dalam daftar --</option>';
-                                    options += '<option value="" disabled>────────────────────</option>';
-                                    departments.forEach(function(dept) {
-                                        const selected = "{{ old('department_id') }}" ==
-                                            dept.id ? 'selected' : '';
-                                        options +=
-                                            `<option value="${dept.id}" ${selected}>${dept.name}</option>`;
-                                    });
+                                    try {
+                                        departments.forEach(function(dept) {
+                                            const selected = "{{ old('department_id') }}" ==
+                                                dept.id ? 'selected' : '';
+                                            const name = String(dept.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                            options += '<option value="' + dept.id + '" ' + selected + '>' + name + '</option>';
+                                        });
+                                    } catch(e) {
+                                        console.error('Department loop error:', e);
+                                    }
                                     $departmentSelect.html(options).prop('disabled', false).trigger('change');
                                 } else {
                                     let options = '<option value="">Pilih Jurusan</option>';
-                                    options += '<option value="other" {{ old("department_id") === "other" ? "selected" : "" }}>-- Jurusan saya tidak ada dalam daftar --</option>';
-                                    $departmentSelect.html(options).prop('disabled', false).trigger('change');
+                                    $departmentSelect.html(options).prop('disabled', false);
                                 }
                             },
                             error: function(xhr, status, error) {
                                 $loading.hide();
-                                $departmentSelect.html(
-                                    '<option value="">Pilih Jurusan</option>' +
-                                    '<option value="other">-- Jurusan saya tidak ada dalam daftar --</option>'
-                                ).prop('disabled', false);
+                                $departmentSelect.html('<option value="">Pilih Jurusan</option>').prop('disabled', false);
+                                $('#dept-other-link-container').show();
 
                                 let errorMessage = 'Gagal memuat data jurusan. ';
                                 if (status === 'timeout') {
@@ -932,6 +940,27 @@
                     validateForm();
                 });
 
+                // "Jurusan tidak ada" link handler
+                $('#dept-other-link').on('click', function(e) {
+                    e.preventDefault();
+                    const $departmentSelect = $('#department_id');
+                    const $otherContainer = $('#department-other-container');
+                    const $otherInput = $('#department_name');
+                    const $levelSelect = $('#education_level');
+                    const $levelContainer = $('#level-container');
+
+                    // Add a hidden "other" option and select it so the form submits department_id=other
+                    if (!$departmentSelect.find('option[value="other"]').length) {
+                        $departmentSelect.append('<option value="other">other</option>');
+                    }
+                    $departmentSelect.val('other');
+                    $levelSelect.prop('disabled', true).val('').html('<option value="">Pilih Jurusan dulu</option>');
+                    $levelContainer.hide();
+                    $otherContainer.show();
+                    $otherInput.prop('required', true).focus();
+                    validateForm();
+                });
+
                 // Department change handler - Load education levels
                 $('#department_id').on('change', function() {
                     const departmentId = $(this).val();
@@ -941,17 +970,7 @@
                     const $otherContainer = $('#department-other-container');
                     const $otherInput = $('#department_name');
 
-                    // Handle "other" selection
-                    if (departmentId === 'other') {
-                        $levelSelect.prop('disabled', true).val('').html('<option value="">Pilih Jurusan dulu</option>');
-                        $levelContainer.hide();
-                        $otherContainer.show();
-                        $otherInput.prop('required', true);
-                        validateForm();
-                        return;
-                    }
-
-                    // Real department selected — hide other input
+                    // When a real dept is selected, hide other input
                     $otherContainer.hide();
                     $otherInput.prop('required', false).val('');
 
@@ -1197,6 +1216,7 @@
 
                 // Restore "other" department state on validation error
                 @if (old('department_id') === 'other')
+                    $('#dept-other-link-container').show();
                     $('#department-other-container').show();
                     $('#department_name').prop('required', true);
                 @endif
