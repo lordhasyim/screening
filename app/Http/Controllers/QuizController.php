@@ -45,7 +45,7 @@ class QuizController extends Controller
     {
         try {
             $validated = $request->validate([
-                'student_year' => 'required|integer|min:2020|max:' . (date('Y') + 1),
+                'student_year' => 'required|integer|min:2015|max:' . (date('Y') + 10),
                 'faculty_id' => 'required|exists:faculties,id',
                 'department_id' => $request->department_id === 'other' ? ['nullable'] : [
                     'required',

@@ -55,14 +55,6 @@
         #city-error { display: none !important; }
         #city-error.visible { display: block !important; }
 
-        /* Suppress Bootstrap 5's auto checkmark on :valid selects — we handle validation ourselves */
-        select.form-select-pastel:valid:not(.is-invalid) {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-            background-size: 16px 12px;
-            background-position: right 0.75rem center;
-            border-color: #e1e8ed;
-        }
-
         .loading-spinner {
             display: inline-block;
             width: 16px;
@@ -181,7 +173,7 @@
                                             class="form-select form-select-pastel @error('student_year') is-invalid @enderror"
                                             required>
                                             <option value="">Pilih Angkatan</option>
-                                            @for ($year = 2015; $year <= date('Y') + 1; $year++)
+                                            @for ($year = 2015; $year <= date('Y') + 10; $year++)
                                                 <option value="{{ $year }}"
                                                     {{ old('student_year') == $year ? 'selected' : '' }}>
                                                     {{ $year }}
@@ -903,12 +895,13 @@
                                         options +=
                                             `<option value="${dept.id}" ${selected}>${dept.name}</option>`;
                                     });
+                                    options += '<option value="" disabled>────────────────────</option>';
                                     options += '<option value="other" {{ old("department_id") === "other" ? "selected" : "" }}>-- Jurusan saya tidak ada dalam daftar --</option>';
-                                    $departmentSelect.html(options).prop('disabled', false);
+                                    $departmentSelect.html(options).prop('disabled', false).trigger('change');
                                 } else {
                                     let options = '<option value="">Pilih Jurusan</option>';
                                     options += '<option value="other" {{ old("department_id") === "other" ? "selected" : "" }}>-- Jurusan saya tidak ada dalam daftar --</option>';
-                                    $departmentSelect.html(options).prop('disabled', false);
+                                    $departmentSelect.html(options).prop('disabled', false).trigger('change');
                                 }
                             },
                             error: function(xhr, status, error) {
