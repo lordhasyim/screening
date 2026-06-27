@@ -214,14 +214,8 @@
                                             disabled>
                                             <option value="">Pilih Fakultas dulu</option>
                                         </select>
-                                        <input type="hidden" id="department_id_other" name="department_id" value="other" disabled>
                                         <div id="department-loading" style="display: none;" class="mt-2">
                                             <span class="loading-spinner"></span> Memuat jurusan...
-                                        </div>
-                                        <div id="dept-other-link-container" style="display: none;" class="mt-1">
-                                            <a href="#" id="dept-other-link" class="small text-primary">
-                                                &#x270D; Jurusan saya tidak ada dalam daftar
-                                            </a>
                                         </div>
                                         <div id="department-other-container" style="display: none;" class="mt-2">
                                             <input type="text" id="department_name" name="department_name"
@@ -879,10 +873,7 @@
                     const $loading = $('#department-loading');
 
                     // Reset department select
-                    $departmentSelect.prop('disabled', true).show().html(
-                        '<option value="">Pilih Fakultas dulu</option>');
-                    $('#department_id_other').prop('disabled', true);
-                    $('#dept-other-link-container').hide();
+                    $departmentSelect.prop('disabled', true).html('<option value="">Pilih Fakultas dulu</option>');
                     $('#department-other-container').hide();
                     $('#department_name').prop('required', false).val('');
 
@@ -893,45 +884,38 @@
                         $.ajax({
                             url: `/api/quiz/departments/${facultyId}`,
                             method: 'GET',
-                            timeout: 10000, // 10 second timeout
+                            timeout: 10000,
                             success: function(departments) {
                                 $loading.hide();
 
-                                $('#dept-other-link-container').show();
+                                let options = '<option value="">Pilih Jurusan</option>';
+                                options += '<option value="other" {{ old("department_id") === "other" ? "selected" : "" }}>-- Jurusan saya tidak ada dalam daftar --</option>';
+
                                 if (Array.isArray(departments) && departments.length > 0) {
-                                    let options = '<option value="">Pilih Jurusan</option>';
-                                    try {
-                                        departments.forEach(function(dept) {
-                                            const selected = "{{ old('department_id') }}" ==
-                                                dept.id ? 'selected' : '';
-                                            const name = String(dept.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                                            options += '<option value="' + dept.id + '" ' + selected + '>' + name + '</option>';
-                                        });
-                                    } catch(e) {
-                                        console.error('Department loop error:', e);
-                                    }
-                                    $departmentSelect.html(options).prop('disabled', false).trigger('change');
-                                } else {
-                                    let options = '<option value="">Pilih Jurusan</option>';
-                                    $departmentSelect.html(options).prop('disabled', false);
+                                    options += '<option value="" disabled>────────────────────</option>';
+                                    departments.forEach(function(dept) {
+                                        const selected = "{{ old('department_id') }}" == dept.id ? 'selected' : '';
+                                        const name = String(dept.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                        options += '<option value="' + dept.id + '" ' + selected + '>' + name + '</option>';
+                                    });
                                 }
+
+                                $departmentSelect.html(options).prop('disabled', false).trigger('change');
                             },
                             error: function(xhr, status, error) {
                                 $loading.hide();
-                                $departmentSelect.html('<option value="">Pilih Jurusan</option>').prop('disabled', false);
-                                $('#dept-other-link-container').show();
+                                let options = '<option value="">Pilih Jurusan</option>';
+                                options += '<option value="other">-- Jurusan saya tidak ada dalam daftar --</option>';
+                                $departmentSelect.html(options).prop('disabled', false);
 
                                 let errorMessage = 'Gagal memuat data jurusan. ';
                                 if (status === 'timeout') {
                                     errorMessage += 'Koneksi timeout.';
-                                } else if (xhr.status === 404) {
-                                    errorMessage += 'Data tidak ditemukan.';
                                 } else if (xhr.status >= 500) {
                                     errorMessage += 'Terjadi kesalahan server.';
                                 } else {
                                     errorMessage += 'Periksa koneksi internet Anda.';
                                 }
-
                                 showNotification(errorMessage, 'error');
                             }
                         });
@@ -939,25 +923,6 @@
                         $loading.hide();
                     }
 
-                    validateForm();
-                });
-
-                // "Jurusan tidak ada" link handler
-                $('#dept-other-link').on('click', function(e) {
-                    e.preventDefault();
-                    const $departmentSelect = $('#department_id');
-                    const $otherContainer = $('#department-other-container');
-                    const $otherInput = $('#department_name');
-                    const $levelSelect = $('#education_level');
-                    const $levelContainer = $('#level-container');
-
-                    // Hide the select, enable the hidden input so department_id=other is submitted
-                    $departmentSelect.prop('disabled', true).hide();
-                    $('#department_id_other').prop('disabled', false);
-                    $levelSelect.prop('disabled', true).val('').html('<option value="">Pilih Jurusan dulu</option>');
-                    $levelContainer.hide();
-                    $otherContainer.show();
-                    $otherInput.prop('required', true).focus();
                     validateForm();
                 });
 
@@ -970,12 +935,16 @@
                     const $otherContainer = $('#department-other-container');
                     const $otherInput = $('#department_name');
 
-                    // "other" is handled by the link click handler, not here
-                    if (departmentId === 'other') return;
+                    if (departmentId === 'other') {
+                        // Show the free-text input, hide education level
+                        $levelSelect.prop('disabled', true).val('').html('<option value="">Pilih Jurusan dulu</option>');
+                        $levelContainer.hide();
+                        $otherContainer.show();
+                        $otherInput.prop('required', true);
+                        validateForm();
+                        return;
+                    }
 
-                    // When a real dept is selected, restore select + disable hidden input
-                    $departmentSelect.show();
-                    $('#department_id_other').prop('disabled', true);
                     $otherContainer.hide();
                     $otherInput.prop('required', false).val('');
 
@@ -1221,9 +1190,6 @@
 
                 // Restore "other" department state on validation error
                 @if (old('department_id') === 'other')
-                    $('#department_id').prop('disabled', true).hide();
-                    $('#department_id_other').prop('disabled', false);
-                    $('#dept-other-link-container').show();
                     $('#department-other-container').show();
                     $('#department_name').prop('required', true);
                 @endif
@@ -1344,8 +1310,8 @@
                         return;
                     }
 
-                    // For department_id: if 'other' mode is active, validate department_name instead
-                    if (fieldSelector === '#department_id' && !$('#department_id_other').prop('disabled')) {
+                    // For department_id: if 'other' is selected, validate department_name instead
+                    if (fieldSelector === '#department_id' && $field.val() === 'other') {
                         const otherVal = $('#department_name').val();
                         if (otherVal && otherVal.trim() !== '') {
                             filledCount++;
