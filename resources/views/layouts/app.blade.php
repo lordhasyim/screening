@@ -64,7 +64,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- Custom JS -->
     {{-- <script src="{{ asset('js/app.js') }}"></script> --}}
-    <script src="/js/app.js"></script>
+    <script src="/js/app-v1.js"></script>
 
 
     @stack('scripts')
