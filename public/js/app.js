@@ -56,6 +56,8 @@ function initializeFormHandlers() {
  * Dependent Dropdowns (Faculty -> Department)
  */
 function initializeDependentDropdowns() {
+    if ($('#identityForm').length) return;
+
     $('#faculty_id').on('change', function() {
         const facultyId = $(this).val();
         const $departmentSelect = $('#department_id');
