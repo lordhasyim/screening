@@ -176,19 +176,21 @@ class DashboardController extends Controller
             ->toArray();
     }
 
-    private function getRiskDistribution()
+    private function getRiskDistribution($facultyId = null)
     {
         return QuizResponse::whereNotNull('overall_risk_level')
+            ->when($facultyId, fn ($q) => $q->where('faculty_id', $facultyId))
             ->groupBy('overall_risk_level')
             ->select('overall_risk_level', DB::raw('count(*) as count'))
             ->pluck('count', 'overall_risk_level')
             ->toArray();
     }
 
-    private function getMonthlyTrends()
+    private function getMonthlyTrends($facultyId = null)
     {
         return QuizResponse::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count')
             ->where('created_at', '>=', Carbon::now()->subMonths(6))
+            ->when($facultyId, fn ($q) => $q->where('faculty_id', $facultyId))
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('count', 'month')
@@ -317,16 +319,31 @@ class DashboardController extends Controller
         return view('admin.dashboard.analytics', compact('stats', 'charts', 'analyticsData'));
     }
 
-    public function reports()
+    public function reports(Request $request)
     {
+        $facultyId = $request->faculty_id;
+
         $reportData = [
             'summary_stats' => $this->getDashboardStats(),
-            'risk_distribution' => $this->getRiskDistribution(),
+            'risk_distribution' => $this->getRiskDistribution($facultyId),
             'faculty_breakdown' => $this->getFacultyDistribution(),
-            'monthly_trends' => $this->getMonthlyTrends(),
+            'monthly_trends' => $this->getMonthlyTrends($facultyId),
+            'selected_faculty_id' => $facultyId,
         ];
 
-        return view('admin.dashboard.reports', compact('reportData'));
+        $faculties = Faculty::orderBy('name')->get();
+
+        return view('admin.dashboard.reports', compact('reportData', 'faculties'));
+    }
+
+    public function reportsData(Request $request)
+    {
+        $facultyId = $request->faculty_id;
+
+        return response()->json([
+            'risk_distribution' => $this->getRiskDistribution($facultyId),
+            'monthly_trends' => $this->getMonthlyTrends($facultyId),
+        ]);
     }
 
     public function export(Request $request)

@@ -100,18 +100,31 @@
     </div>
 </div>
 
+@php $selectedFaculty = $reportData['selected_faculty_id'] ? $faculties->firstWhere('id', $reportData['selected_faculty_id']) : null; @endphp
+
 <!-- Risk Level Distribution -->
 <div class="row">
     <div class="col-lg-6 mb-4">
         <div class="card shadow">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Distribusi Tingkat Risiko</h6>
+            <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                <h6 class="m-0 mr-2 font-weight-bold text-primary text-truncate" style="min-width: 0;">
+                    Distribusi Tingkat Risiko
+                    <span id="riskFacultyHint" class="text-muted font-weight-normal">{{ $selectedFaculty ? '— '.$selectedFaculty->name : '' }}</span>
+                </h6>
+                <select id="riskFacultyFilter" class="form-control form-control-sm" style="width: auto; max-width: 220px; flex-shrink: 0;">
+                    <option value="">Semua Fakultas</option>
+                    @foreach($faculties as $faculty)
+                        <option value="{{ $faculty->id }}" {{ $reportData['selected_faculty_id'] == $faculty->id ? 'selected' : '' }}>
+                            {{ $faculty->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
             <div class="card-body">
                 <div class="chart-pie pt-4 pb-2">
                     <canvas id="riskPieChart"></canvas>
                 </div>
-                <div class="mt-4 text-center small">
+                <div id="riskLegend" class="mt-4 text-center small">
                     @foreach($reportData['risk_distribution'] as $level => $count)
                     <span class="mr-2">
                         <i class="fas fa-circle text-{{ getRiskBadgeColor($level) }}"></i> {{ $level }}
@@ -129,7 +142,7 @@
                                 <th>Persentase</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="riskTableBody">
                             @php $totalRisk = array_sum($reportData['risk_distribution']); @endphp
                             @foreach($reportData['risk_distribution'] as $level => $count)
                             <tr>
@@ -198,7 +211,10 @@
     <div class="col-lg-12 mb-4">
         <div class="card shadow">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Tren Bulanan (6 Bulan Terakhir)</h6>
+                <h6 class="m-0 font-weight-bold text-primary">
+                    Tren Bulanan (6 Bulan Terakhir)
+                    <span id="monthlyFacultyHint" class="text-muted font-weight-normal">{{ $selectedFaculty ? '— '.$selectedFaculty->name : '' }}</span>
+                </h6>
             </div>
             <div class="card-body">
                 <div class="chart-area">
@@ -209,7 +225,7 @@
                 <div class="table-responsive mt-4">
                     <table class="table table-bordered">
                         <thead>
-                            <tr>
+                            <tr id="monthlyTableHeaderRow">
                                 <th>Bulan</th>
                                 @foreach($reportData['monthly_trends'] as $month => $count)
                                 <th>{{ $month }}</th>
@@ -217,7 +233,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
+                            <tr id="monthlyTableDataRow">
                                 <td><strong>Jumlah Respons</strong></td>
                                 @foreach($reportData['monthly_trends'] as $month => $count)
                                 <td>{{ $count }}</td>
@@ -277,7 +293,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
 <script>
 // Risk Level Pie Chart
 const riskCtx = document.getElementById('riskPieChart').getContext('2d');
@@ -464,6 +480,71 @@ const monthlyChart = new Chart(monthlyCtx, {
             caretPadding: 10,
         }
     }
+});
+
+// Faculty filter — AJAX re-render of Risk Distribution & Monthly Trends
+const RISK_BADGE = { Low: 'success', Moderate: 'info', High: 'warning', Critical: 'danger' };
+const RISK_COLOR = { Low: '#1cc88a', Moderate: '#36b9cc', High: '#f6c23e', Critical: '#e74a3b' };
+
+function riskBadge(level) {
+    return RISK_BADGE[level] || 'secondary';
+}
+
+function riskColor(level) {
+    return RISK_COLOR[level] || '#858796';
+}
+
+function updateRiskChart(data) {
+    const labels = Object.keys(data);
+    riskChart.data.labels = labels;
+    riskChart.data.datasets[0].data = Object.values(data);
+    riskChart.data.datasets[0].backgroundColor = labels.map(riskColor);
+    riskChart.update();
+
+    const legend = document.getElementById('riskLegend');
+    legend.innerHTML = labels.map(level =>
+        `<span class="mr-2"><i class="fas fa-circle text-${riskBadge(level)}"></i> ${level}</span>`
+    ).join('');
+
+    const total = Object.values(data).reduce((sum, count) => sum + count, 0);
+    const tbody = document.getElementById('riskTableBody');
+    tbody.innerHTML = labels.map(level => {
+        const count = data[level];
+        const pct = total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+        return `<tr>
+            <td><span class="badge badge-${riskBadge(level)}">${level}</span></td>
+            <td>${count}</td>
+            <td>${pct}%</td>
+        </tr>`;
+    }).join('');
+}
+
+function updateMonthlyChart(data) {
+    const months = Object.keys(data);
+    monthlyChart.data.labels = months;
+    monthlyChart.data.datasets[0].data = Object.values(data);
+    monthlyChart.update();
+
+    const headerRow = document.getElementById('monthlyTableHeaderRow');
+    headerRow.innerHTML = '<th>Bulan</th>' + months.map(m => `<th>${m}</th>`).join('');
+
+    const dataRow = document.getElementById('monthlyTableDataRow');
+    dataRow.innerHTML = '<td><strong>Jumlah Respons</strong></td>' + months.map(m => `<td>${data[m]}</td>`).join('');
+}
+
+document.getElementById('riskFacultyFilter').addEventListener('change', function () {
+    const facultyId = this.value;
+    const facultyName = facultyId ? this.options[this.selectedIndex].text : '';
+    const hint = facultyName ? `— ${facultyName}` : '';
+
+    fetch(`{{ route('admin.reports.data') }}?faculty_id=${encodeURIComponent(facultyId)}`)
+        .then(response => response.json())
+        .then(data => {
+            updateRiskChart(data.risk_distribution);
+            updateMonthlyChart(data.monthly_trends);
+            document.getElementById('riskFacultyHint').textContent = hint;
+            document.getElementById('monthlyFacultyHint').textContent = hint;
+        });
 });
 </script>
 @endpush

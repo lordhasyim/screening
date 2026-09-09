@@ -358,7 +358,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
 <script>
 // Chart Data from Server
 const chartData = @json($charts);
