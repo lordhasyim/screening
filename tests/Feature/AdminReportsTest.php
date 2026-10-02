@@ -94,6 +94,26 @@ class AdminReportsTest extends TestCase
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
     }
 
+    public function test_export_echoes_back_download_token_as_cookie(): void
+    {
+        $response = $this->actingAs($this->admin, 'admin')
+            ->get(route('admin.export', ['format' => 'csv', 'download_token' => 'dl_abc123']));
+
+        $response->assertOk();
+        $response->assertCookie('dl_abc123');
+    }
+
+    public function test_export_ignores_malformed_download_token(): void
+    {
+        $response = $this->actingAs($this->admin, 'admin')
+            ->get(route('admin.export', ['format' => 'csv', 'download_token' => 'not valid; Max-Age=0']));
+
+        $response->assertOk();
+
+        $cookieNames = collect($response->headers->getCookies())->map->getName();
+        $this->assertFalse($cookieNames->contains('not valid; Max-Age=0'));
+    }
+
     public function test_detailed_export_downloads_valid_xlsx_with_full_headers(): void
     {
         $response = $this->actingAs($this->admin, 'admin')

@@ -552,7 +552,12 @@ document.getElementById('riskFacultyFilter').addEventListener('change', function
 
 // Show a loading state on export buttons so a slow export (large datasets
 // take a while to generate) doesn't look broken and invite repeated clicks.
-function bindExportLoadingState(id, loadingLabel, resetMs) {
+// A plain download link never tells JS when the file is done, so the server
+// echoes back a one-time token as a cookie once the file is ready to send -
+// we poll for that cookie and reset the button the moment it appears,
+// instead of guessing with a fixed timer (a fallback timeout still applies
+// in case the cookie never arrives, e.g. cookies blocked).
+function bindExportLoadingState(id, loadingLabel) {
     const link = document.getElementById(id);
     if (!link) return;
 
@@ -565,20 +570,38 @@ function bindExportLoadingState(id, loadingLabel, resetMs) {
             return;
         }
 
+        event.preventDefault();
+
+        const token = 'dl_' + Date.now().toString(36) + Math.random().toString(36).slice(2);
+        const separator = link.href.includes('?') ? '&' : '?';
+
         loading = true;
         link.classList.add('disabled');
         link.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${loadingLabel}`;
 
-        setTimeout(function () {
+        window.location.href = link.href + separator + 'download_token=' + token;
+
+        const maxWaitMs = 90000;
+        const startedAt = Date.now();
+        const poll = setInterval(function () {
+            const cookieReady = document.cookie.indexOf(token + '=') !== -1;
+            const timedOut = Date.now() - startedAt > maxWaitMs;
+
+            if (!cookieReady && !timedOut) {
+                return;
+            }
+
+            clearInterval(poll);
+            document.cookie = token + '=; Max-Age=0; path=/';
             loading = false;
             link.classList.remove('disabled');
             link.innerHTML = originalHtml;
-        }, resetMs);
+        }, 300);
     });
 }
 
-bindExportLoadingState('exportExcelBtn', 'Memproses...', 20000);
-bindExportLoadingState('exportCsvBtn', 'Memproses...', 20000);
-bindExportLoadingState('exportDetailedBtn', 'Memproses... (mohon tunggu)', 60000);
+bindExportLoadingState('exportExcelBtn', 'Memproses...');
+bindExportLoadingState('exportCsvBtn', 'Memproses...');
+bindExportLoadingState('exportDetailedBtn', 'Memproses... (mohon tunggu)');
 </script>
 @endpush

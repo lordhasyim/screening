@@ -9,6 +9,7 @@ use App\Models\QuizResponse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -354,6 +355,8 @@ class DashboardController extends Controller
 
     public function export(Request $request)
     {
+        $this->queueDownloadToken($request);
+
         $format = $request->get('format', 'excel');
         $query = QuizResponse::with(['faculty', 'department']);
 
@@ -387,6 +390,8 @@ class DashboardController extends Controller
 
     public function exportDetailed(Request $request)
     {
+        $this->queueDownloadToken($request);
+
         // The 83-column sheet is built entirely in memory by PhpSpreadsheet
         // before being written out, which can exceed a shared host's default
         // memory_limit once there are enough responses. Raise it just for
@@ -413,6 +418,21 @@ class DashboardController extends Controller
         }
 
         return Excel::download(new DetailedResponsesExport($query), 'jawaban_lengkap_'.now()->format('Y-m-d_His').'.xlsx');
+    }
+
+    /**
+     * Echo back a client-generated token as a short-lived, JS-readable
+     * cookie so the download button can detect when the file is actually
+     * ready (the response is about to be sent) instead of guessing with a
+     * fixed timer. The token is validated since it becomes a cookie name.
+     */
+    private function queueDownloadToken(Request $request): void
+    {
+        $token = $request->query('download_token');
+
+        if ($token && preg_match('/^[A-Za-z0-9_]{1,64}$/', $token)) {
+            Cookie::queue($token, '1', 1, null, null, false, false);
+        }
     }
 
     public function settings()
