@@ -6,13 +6,13 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Laporan Skrining</h1>
     <div class="d-flex gap-2">
-        <a href="{{ route('admin.export', ['format' => 'excel']) }}" class="btn btn-success btn-sm">
+        <a href="{{ route('admin.export', ['format' => 'excel']) }}" id="exportExcelBtn" class="btn btn-success btn-sm">
             <i class="fas fa-file-excel fa-sm text-white-50"></i> Export Excel
         </a>
-        <a href="{{ route('admin.export', ['format' => 'csv']) }}" class="btn btn-info btn-sm">
+        <a href="{{ route('admin.export', ['format' => 'csv']) }}" id="exportCsvBtn" class="btn btn-info btn-sm">
             <i class="fas fa-file-csv fa-sm text-white-50"></i> Export CSV
         </a>
-        <a href="{{ route('admin.export-detailed') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('admin.export-detailed') }}" id="exportDetailedBtn" class="btn btn-primary btn-sm">
             <i class="fas fa-file-excel fa-sm text-white-50"></i> Export Detail Jawaban
         </a>
     </div>
@@ -549,5 +549,36 @@ document.getElementById('riskFacultyFilter').addEventListener('change', function
             document.getElementById('monthlyFacultyHint').textContent = hint;
         });
 });
+
+// Show a loading state on export buttons so a slow export (large datasets
+// take a while to generate) doesn't look broken and invite repeated clicks.
+function bindExportLoadingState(id, loadingLabel, resetMs) {
+    const link = document.getElementById(id);
+    if (!link) return;
+
+    const originalHtml = link.innerHTML;
+    let loading = false;
+
+    link.addEventListener('click', function (event) {
+        if (loading) {
+            event.preventDefault();
+            return;
+        }
+
+        loading = true;
+        link.classList.add('disabled');
+        link.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${loadingLabel}`;
+
+        setTimeout(function () {
+            loading = false;
+            link.classList.remove('disabled');
+            link.innerHTML = originalHtml;
+        }, resetMs);
+    });
+}
+
+bindExportLoadingState('exportExcelBtn', 'Memproses...', 20000);
+bindExportLoadingState('exportCsvBtn', 'Memproses...', 20000);
+bindExportLoadingState('exportDetailedBtn', 'Memproses... (mohon tunggu)', 60000);
 </script>
 @endpush
