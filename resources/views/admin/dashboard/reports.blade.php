@@ -12,6 +12,9 @@
         <a href="{{ route('admin.export', ['format' => 'csv']) }}" class="btn btn-info btn-sm">
             <i class="fas fa-file-csv fa-sm text-white-50"></i> Export CSV
         </a>
+        <a href="{{ route('admin.export-detailed') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-file-excel fa-sm text-white-50"></i> Export Detail Jawaban
+        </a>
     </div>
 </div>
 

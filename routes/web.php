@@ -76,6 +76,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/reports', [DashboardController::class, 'reports'])->name('reports');
         Route::get('/reports/data', [DashboardController::class, 'reportsData'])->name('reports.data');
         Route::get('/export', [DashboardController::class, 'export'])->name('export');
+        Route::get('/export-detailed', [DashboardController::class, 'exportDetailed'])->name('export-detailed');
 
         Route::get('/responses/{response}/pdf', [DashboardController::class, 'downloadPDF'])->name('responses.pdf');
 

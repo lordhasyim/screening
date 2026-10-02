@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\DetailedResponsesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Faculty;
 use App\Models\QuizResponse;
@@ -9,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
@@ -188,7 +190,11 @@ class DashboardController extends Controller
 
     private function getMonthlyTrends($facultyId = null)
     {
-        return QuizResponse::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count')
+        $monthExpression = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', created_at)"
+            : 'DATE_FORMAT(created_at, "%Y-%m")';
+
+        return QuizResponse::selectRaw("{$monthExpression} as month, COUNT(*) as count")
             ->where('created_at', '>=', Carbon::now()->subMonths(6))
             ->when($facultyId, fn ($q) => $q->where('faculty_id', $facultyId))
             ->groupBy('month')
@@ -204,8 +210,8 @@ class DashboardController extends Controller
 
     private function getFacultyDistribution()
     {
-        return Faculty::withCount('quizResponses')
-            ->having('quiz_responses_count', '>', 0)
+        return Faculty::has('quizResponses')
+            ->withCount('quizResponses')
             ->orderBy('quiz_responses_count', 'desc')
             ->limit(10)
             ->pluck('quiz_responses_count', 'name')
@@ -377,6 +383,29 @@ class DashboardController extends Controller
         }
 
         return redirect()->back()->with('error', 'Format ekspor tidak didukung');
+    }
+
+    public function exportDetailed(Request $request)
+    {
+        $query = QuizResponse::with(['faculty', 'department']);
+
+        if ($request->filled('faculty_id')) {
+            $query->where('faculty_id', $request->faculty_id);
+        }
+
+        if ($request->filled('risk_level')) {
+            $query->where('overall_risk_level', $request->risk_level);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        return Excel::download(new DetailedResponsesExport($query), 'jawaban_lengkap_'.now()->format('Y-m-d_His').'.xlsx');
     }
 
     public function settings()

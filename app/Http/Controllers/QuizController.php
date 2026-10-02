@@ -311,6 +311,8 @@ class QuizController extends Controller
 
             return redirect()->route('quiz.result', $quizResponse->id)
                 ->with('success', 'Skrining selesai!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error in submitPhq9: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat menyimpan jawaban. Silakan coba lagi.')->withInput();
@@ -379,6 +381,8 @@ class QuizController extends Controller
 
             return redirect()->route('quiz.result', $quizResponse->id)
                 ->with('success', 'Skrining lengkap selesai!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error in submitDass21: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan saat menyimpan jawaban. Silakan coba lagi.')->withInput();
@@ -397,54 +401,13 @@ class QuizController extends Controller
     // Get PHQ-9 questions
     private function getPhq9Questions()
     {
-        return [
-            'Kurang tertarik atau bergairah dalam melakukan apapun',
-            'Merasa sedih, murung, kesepian, atau putus asa',
-            'Sulit tidur atau mudah terbangun, atau terlalu banyak tidur',
-            'Merasa lelah atau kurang bertenaga',
-            'Kurang nafsu makan atau terlalu banyak makan',
-            'Mudah merasa cemas dan gelisah pada situasi tertentu',
-            'Sulit mempertahankan konsentrasi saat berkegiatan',
-            'Merasa hidup tidak berarti, tidak berharga, tidak layak, atau tidak berguna',
-            'Merasa tidak mendapatkan dukungan sosial dari lingkungan (Orang tua, teman, pasangan atau lainnya)',
-        ];
+        return config('quiz_questions.phq9');
     }
 
     // Get DASS-21 Extended questions (30 questions)
     private function getDass21Questions()
     {
-        return [
-            'Saya merasa bahwa diri saya menjadi marah karena hal-hal sepele',
-            'Saya sama sekali tidak dapat merasakan perasaan positif',
-            'Saya mengalami kesulitan bernafas (misalnya: sering kali terengah-engah atau tidak dapat bernafas padahal tidak melakukan aktivitas fisik sebelumnya)',
-            'Saya sepertinya tidak kuat lagi untuk melakukan suatu kegiatan.',
-            'Saya cenderung bereaksi berlebihan terhadap suatu situasi.',
-            'Saya merasa gemetar (misalnya: pada tangan)',
-            'Saya merasa telah menghabiskan banyak energi disaat merasa cemas.',
-            'Saya merasa khawatir dengan situasi dimana saya mungkin menjadi panik dan mempermalukan diri sendiri.',
-            'Saya merasa tidak ada hal yang dapat diharapkan di masa depan',
-            'Saya mudah merasa gelisah',
-            'Saya merasa sulit untuk bersantai',
-            'Saya tidak merasa antusias dalam hal apapun.',
-            'Saya merasa bahwa saya tidak berharga sebagai seorang manusia',
-            'Saya merasa bahwa saya mudah tersinggung',
-            'Saya menyadari perubahan detak jantung, walaupun tidak sehabis melakukan aktivitas fisik (misalnya: merasa detak jantung meningkat atau melemah).',
-            'Saya merasa takut tanpa alasan yang jelas',
-            'Saya mengalami perubahan suasana hati secara tiba-tiba tanpa alasan yang jelas',
-            'Saya masih merasa sangat sedih atau sulit menerima kenyataan setelah kehilangan orang yang saya cintai (karena kematian, perceraian, atau perpisahan)',
-            'Saya memiliki keinginan untuk menyakiti diri sendiri saat merasa sangat sedih atau tertekan',
-            'Saya pernah mengalami keluhan di tubuh yang muncul saat banyak pikiran',
-            'Saya merasa sulit mengendalikan emosi, seperti mudah marah, tersinggung, atau menangis tanpa alasan yang jelas',
-            'Saya merasa tidak stabil secara emosional dan sulit menenangkan diri saat menghadapi masalah kecil',
-            'Saya pernah mengalami suatu kejadian traumatik di masa lalu yang membuat saya masih terbayang kejadian tersebut sampai saat ini (Misalnya pelecehan, kekerasan fisik, kekerasan verbal, dll.)',
-            'Saya memiliki konflik berkepanjangan dengan teman, keluarga, ataupun pasangan',
-            'Saya kesulitan dalam mempertahankan relasi dengan teman ataupun pasangan',
-            'Saya memiliki perasaan hampa yang sudah lama dirasakan',
-            'Saya sering merasa curiga dengan orang lain',
-            'Saya melakukan banyak usaha agar tidak diabaikan oleh orang lain lain yang signifikan bagi saya',
-            'Saya memiliki perilaku impulsif seperti perilaku seksual berbahaya, pemakaian zat adiktif, kebut-kebutan, atau makan dalam jumlah sangat banyak',
-            'Saya pernah memiliki pemikiran untuk mengakhiri hidup',
-        ];
+        return config('quiz_questions.dass21');
     }
 
     // API endpoint to get departments by faculty
