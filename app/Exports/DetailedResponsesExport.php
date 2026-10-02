@@ -194,10 +194,6 @@ class DetailedResponsesExport extends DefaultValueBinder implements FromQuery, W
                     ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()->setRGB('DCE6F1');
 
-                $questionStartColumn = Coordinate::stringFromColumnIndex(self::DEMOGRAPHIC_COLUMN_COUNT + 1);
-                $questionEndColumn = Coordinate::stringFromColumnIndex(self::DEMOGRAPHIC_COLUMN_COUNT + self::QUESTION_COLUMN_COUNT);
-                $sheet->getStyle("{$questionStartColumn}1:{$questionEndColumn}1")->getAlignment()->setWrapText(true);
-
                 $sheet->freezePane('A2');
                 $sheet->setAutoFilter($headerRange);
             },
