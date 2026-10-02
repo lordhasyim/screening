@@ -5,16 +5,22 @@
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Laporan Skrining</h1>
-    <div class="d-flex gap-2">
-        <a href="{{ route('admin.export', ['format' => 'excel']) }}" id="exportExcelBtn" class="btn btn-success btn-sm">
-            <i class="fas fa-file-excel fa-sm text-white-50"></i> Export Excel
-        </a>
-        <a href="{{ route('admin.export', ['format' => 'csv']) }}" id="exportCsvBtn" class="btn btn-info btn-sm">
-            <i class="fas fa-file-csv fa-sm text-white-50"></i> Export CSV
-        </a>
-        <a href="{{ route('admin.export-detailed') }}" id="exportDetailedBtn" class="btn btn-primary btn-sm">
-            <i class="fas fa-file-excel fa-sm text-white-50"></i> Export Detail Jawaban
-        </a>
+    <div class="text-right">
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.export', ['format' => 'excel']) }}" id="exportExcelBtn" class="btn btn-success btn-sm">
+                <i class="fas fa-file-excel fa-sm text-white-50"></i> Export Excel
+            </a>
+            <a href="{{ route('admin.export', ['format' => 'csv']) }}" id="exportCsvBtn" class="btn btn-info btn-sm">
+                <i class="fas fa-file-csv fa-sm text-white-50"></i> Export CSV
+            </a>
+            <a href="{{ route('admin.export-detailed') }}" id="exportDetailedBtn" class="btn btn-primary btn-sm">
+                <i class="fas fa-file-excel fa-sm text-white-50"></i> Export Detail Jawaban
+            </a>
+        </div>
+        <small class="text-muted d-block mt-1">
+            Mengekspor: <span id="exportFacultyHint">Semua Fakultas</span>
+            <span class="text-muted">(ikuti filter fakultas di bawah)</span>
+        </small>
     </div>
 </div>
 
@@ -535,10 +541,33 @@ function updateMonthlyChart(data) {
     dataRow.innerHTML = '<td><strong>Jumlah Respons</strong></td>' + months.map(m => `<td>${data[m]}</td>`).join('');
 }
 
+// Export buttons reuse the faculty filter above - keeps a single control
+// instead of a second, redundant selector just for exports.
+const exportLinkBases = {
+    exportExcelBtn: '{{ route('admin.export', ['format' => 'excel']) }}',
+    exportCsvBtn: '{{ route('admin.export', ['format' => 'csv']) }}',
+    exportDetailedBtn: '{{ route('admin.export-detailed') }}',
+};
+
+function updateExportLinks(facultyId, facultyName) {
+    Object.keys(exportLinkBases).forEach(function (id) {
+        const link = document.getElementById(id);
+        if (!link) return;
+
+        const base = exportLinkBases[id];
+        const separator = base.includes('?') ? '&' : '?';
+        link.href = facultyId ? `${base}${separator}faculty_id=${encodeURIComponent(facultyId)}` : base;
+    });
+
+    document.getElementById('exportFacultyHint').textContent = facultyName || 'Semua Fakultas';
+}
+
 document.getElementById('riskFacultyFilter').addEventListener('change', function () {
     const facultyId = this.value;
     const facultyName = facultyId ? this.options[this.selectedIndex].text : '';
     const hint = facultyName ? `— ${facultyName}` : '';
+
+    updateExportLinks(facultyId, facultyName);
 
     fetch(`{{ route('admin.reports.data') }}?faculty_id=${encodeURIComponent(facultyId)}`)
         .then(response => response.json())
@@ -549,6 +578,15 @@ document.getElementById('riskFacultyFilter').addEventListener('change', function
             document.getElementById('monthlyFacultyHint').textContent = hint;
         });
 });
+
+// Reflect the page's initial faculty filter (e.g. loaded via ?faculty_id=X)
+// in the export links right away, not just after the dropdown changes.
+(function initializeExportLinks() {
+    const select = document.getElementById('riskFacultyFilter');
+    const facultyId = select.value;
+    const facultyName = facultyId ? select.options[select.selectedIndex].text : '';
+    updateExportLinks(facultyId, facultyName);
+})();
 
 // Show a loading state on export buttons so a slow export (large datasets
 // take a while to generate) doesn't look broken and invite repeated clicks.
