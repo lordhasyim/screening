@@ -387,6 +387,13 @@ class DashboardController extends Controller
 
     public function exportDetailed(Request $request)
     {
+        // The 83-column sheet is built entirely in memory by PhpSpreadsheet
+        // before being written out, which can exceed a shared host's default
+        // memory_limit once there are enough responses. Raise it just for
+        // this one request (returns false, not an error, if the host blocks
+        // runtime overrides via php_admin_value).
+        ini_set('memory_limit', '512M');
+
         $query = QuizResponse::with(['faculty', 'department']);
 
         if ($request->filled('faculty_id')) {
