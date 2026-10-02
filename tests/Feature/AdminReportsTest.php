@@ -94,6 +94,48 @@ class AdminReportsTest extends TestCase
         $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
     }
 
+    public function test_summary_export_downloads_valid_xlsx_with_formatting(): void
+    {
+        $response = $this->actingAs($this->admin, 'admin')
+            ->get(route('admin.export', ['format' => 'excel']));
+
+        $response->assertOk();
+        $response->assertHeader(
+            'content-type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+
+        $tmpFile = $response->getFile()->getPathname();
+        $sheet = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($tmpFile)->load($tmpFile)->getActiveSheet();
+
+        $this->assertSame('ID', $sheet->getCell('A1')->getValue());
+        $this->assertSame('NIM', $sheet->getCell('B1')->getValue());
+        $this->assertSame('Tanggal Selesai', $sheet->getCell('O1')->getValue());
+        $this->assertTrue($sheet->getStyle('A1')->getFont()->getBold());
+        $this->assertSame('A2', $sheet->getFreezePane());
+
+        // NIM must stay literal text (no scientific notation / leading-zero loss).
+        $this->assertSame('s', $sheet->getCell('B2')->getDataType());
+
+        unlink($tmpFile);
+    }
+
+    public function test_summary_export_excel_respects_faculty_filter(): void
+    {
+        $response = $this->actingAs($this->admin, 'admin')
+            ->get(route('admin.export', ['format' => 'excel', 'faculty_id' => $this->facultyB->id]));
+
+        $tmpFile = $response->getFile()->getPathname();
+        $sheet = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($tmpFile)->load($tmpFile)->getActiveSheet();
+
+        // facultyB has 3 seeded responses -> rows 2..4, row 5 should be empty.
+        $this->assertSame($this->facultyB->name, $sheet->getCell('E2')->getValue());
+        $this->assertSame($this->facultyB->name, $sheet->getCell('E4')->getValue());
+        $this->assertNull($sheet->getCell('E5')->getValue());
+
+        unlink($tmpFile);
+    }
+
     public function test_export_echoes_back_download_token_as_cookie(): void
     {
         $response = $this->actingAs($this->admin, 'admin')

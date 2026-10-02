@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\DetailedResponsesExport;
+use App\Exports\SummaryResponsesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Faculty;
 use App\Models\QuizResponse;
@@ -377,15 +378,15 @@ class DashboardController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $responses = $query->get();
-
-        if ($format === 'excel') {
-            return $this->exportToExcel($responses);
-        } elseif ($format === 'csv') {
-            return $this->exportToCsv($responses);
+        if (! in_array($format, ['excel', 'csv'])) {
+            return redirect()->back()->with('error', 'Format ekspor tidak didukung');
         }
 
-        return redirect()->back()->with('error', 'Format ekspor tidak didukung');
+        $writerType = $format === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX;
+        $extension = $format === 'csv' ? 'csv' : 'xlsx';
+        $filename = 'ringkasan_skrining_'.now()->format('Y-m-d_His').'.'.$extension;
+
+        return Excel::download(new SummaryResponsesExport($query), $filename, $writerType);
     }
 
     public function exportDetailed(Request $request)
@@ -527,53 +528,4 @@ class DashboardController extends Controller
             ->get();
     }
 
-    private function exportToExcel($responses)
-    {
-        $filename = 'quiz_responses_'.date('Y-m-d_H-i-s').'.csv';
-
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
-        ];
-
-        $callback = function () use ($responses) {
-            $file = fopen('php://output', 'w');
-
-            // Headers
-            fputcsv($file, [
-                'ID', 'NIM', 'Nama', 'Gender', 'Fakultas', 'Jurusan', 'Tahun',
-                'PHQ9 Score', 'PHQ9 Kategori', 'DASS21 Score', 'DASS21 Kategori',
-                'Risk Level', 'Status', 'Tanggal Mulai', 'Tanggal Selesai',
-            ]);
-
-            foreach ($responses as $response) {
-                fputcsv($file, [
-                    $response->id,
-                    $response->nim,
-                    $response->full_name,
-                    $response->gender,
-                    $response->faculty->name ?? 'N/A',
-                    $response->department->name ?? 'N/A',
-                    $response->student_year,
-                    $response->phq9_total_score ?? 'N/A',
-                    $response->phq9_category ?? 'N/A',
-                    $response->dass21_total_score ?? 'N/A',
-                    $response->dass21_category ?? 'N/A',
-                    $response->overall_risk_level ?? 'N/A',
-                    $response->quiz_status,
-                    $response->started_at ? $response->started_at->format('Y-m-d H:i:s') : 'N/A',
-                    $response->completed_at ? $response->completed_at->format('Y-m-d H:i:s') : 'N/A',
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    private function exportToCsv($responses)
-    {
-        return $this->exportToExcel($responses); // Same implementation for now
-    }
 }
